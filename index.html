@@ -3,231 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SDA - Sistema de Desempenho Avançado 2025</title>
+    <title>SDA - Gestão de Performance Profissional</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg: #0f172a; --card: #ffffff; --primary: #3b82f6; --success: #22c55e; --warning: #f59e0b; --danger: #ef4444; }
+        :root { --bg: #0f172a; --primary: #3b82f6; --success: #22c55e; --warning: #f59e0b; --danger: #ef4444; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background-color: #f1f5f9; }
+        body, html { width: 100%; height: 100%; overflow: hidden; background-color: #f8fafc; }
         .wrapper { display: flex; width: 100vw; height: 100vh; }
 
         /* SIDEBAR */
-        .sidebar { width: 320px; background: var(--bg); color: white; padding: 15px; display: flex; flex-direction: column; flex-shrink: 0; z-index: 10; }
-        .search-box { padding: 12px; margin-bottom: 10px; border-radius: 6px; border: none; width: 100%; background: #1e293b; color: white; outline: none; }
-        .list-area { flex-grow: 1; overflow-y: auto; margin-bottom: 10px; padding-right: 5px; }
-        .item { padding: 10px; background: #1e293b; margin-bottom: 6px; border-radius: 6px; cursor: pointer; font-size: 12px; border: 1px solid transparent; transition: 0.2s; }
-        .item.active { background: var(--primary); border-color: white; }
+        .sidebar { width: 320px; background: var(--bg); color: white; padding: 15px; display: flex; flex-direction: column; flex-shrink: 0; }
+        .list-area { flex-grow: 1; overflow-y: auto; margin-top: 10px; }
+        .item { padding: 12px; background: #1e293b; margin-bottom: 8px; border-radius: 8px; cursor: pointer; border-left: 4px solid transparent; transition: 0.2s; }
+        .item.active { background: var(--primary); border-left-color: white; }
         .item:hover:not(.active) { background: #334155; }
 
-        /* INPUTS */
-        .editor { background: #1e293b; padding: 12px; border-radius: 8px; margin-top: 5px; }
-        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-        .row label { font-size: 10px; color: #94a3b8; }
-        .row input { width: 50px; text-align: center; border-radius: 4px; border: none; font-weight: bold; padding: 3px; background: white; }
+        /* EDITOR */
+        .editor { background: #1e293b; padding: 15px; border-radius: 10px; margin-top: 10px; }
+        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .row label { font-size: 11px; color: #94a3b8; }
+        .row input { width: 60px; text-align: center; border-radius: 4px; border: none; padding: 4px; font-weight: bold; }
 
-        /* MAIN CONTENT */
-        .main { flex-grow: 1; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .header { background: white; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        /* MAIN */
+        .main { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
+        .header-dash { background: white; padding: 20px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         
-        /* RANKING PILLS */
-        .ranking-bar { display: flex; gap: 10px; margin-bottom: 5px; }
-        .rank-pill { background: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid var(--primary); }
+        .stats-grid { display: flex; gap: 15px; }
+        .stat-card { background: white; padding: 15px; border-radius: 12px; flex: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-top: 4px solid var(--primary); }
+        .stat-card small { color: #64748b; font-size: 11px; text-transform: uppercase; }
+        .stat-card h3 { font-size: 18px; margin-top: 5px; }
 
-        /* GRID */
-        .grid { display: grid; grid-template-columns: 1fr 1.2fr; grid-template-rows: 1.2fr 1fr; gap: 10px; flex-grow: 1; min-height: 0; }
-        .card { background: white; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .card h4 { font-size: 11px; color: #64748b; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px; }
+        .charts-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex-grow: 1; }
+        .card-chart { background: white; border-radius: 15px; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .full { grid-column: span 2; }
-        .chart-container { flex-grow: 1; position: relative; width: 100%; height: 100%; }
-
-        /* COMPARAR SELECT */
-        #compare-select { padding: 4px; font-size: 11px; border-radius: 4px; margin-left: 10px; }
-
-        /* BUTTONS */
-        .btn-pdf { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; }
-        .btn-pdf:hover { opacity: 0.9; }
-
-        @media print { .sidebar, .btn-pdf, .ranking-bar { display: none !important; } .main { width: 100%; } .card { box-shadow: none; border: 1px solid #eee; } }
+        
+        .badge-class { padding: 5px 15px; border-radius: 20px; color: white; font-weight: bold; font-size: 12px; }
     </style>
 </head>
 <body>
 
 <div class="wrapper">
     <div class="sidebar">
-        <h2>Gestores</h2>
-        <input type="text" id="search" class="search-box" placeholder="Pesquisar gestor..." onkeyup="render()">
+        <h2 style="font-size: 16px; font-weight: 600;">Gestores Avaliados</h2>
         <div class="list-area" id="list"></div>
         
         <div class="editor">
-            <h3 style="font-size: 10px; color: var(--primary); margin-bottom: 10px;">NOTAS ATUAIS</h3>
-            <div id="inputs"></div>
+            <h4 style="font-size: 11px; color: var(--primary); margin-bottom: 10px;">EDITAR MÉTRICAS (PESOS)</h4>
+            <div id="inputs-area"></div>
         </div>
     </div>
 
     <div class="main">
-        <div class="ranking-bar" id="top-ranking">
-            </div>
-
-        <div class="header">
+        <div class="header-dash">
             <div>
-                <h2 id="h-name">Nome do Gestor</h2>
-                <small id="h-role">Cargo</small>
-                <select id="compare-select" onchange="refresh()">
-                    <option value="">Comparar com...</option>
-                </select>
+                <h1 id="h-name">Nome</h1>
+                <p id="h-role" style="color: #64748b;">Cargo</p>
             </div>
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <button class="btn-pdf" onclick="window.print()">📄 Exportar Relatório</button>
-                <div id="avg-badge" style="padding: 10px 20px; border-radius: 12px; color: white; font-weight: bold; font-size: 18px;">0.0</div>
+            <div style="text-align: right;">
+                <span id="h-class" class="badge-class">Excelente</span>
+                <h2 id="h-total" style="font-size: 32px; color: var(--bg);">100</h2>
             </div>
         </div>
 
-        <div class="grid">
-            <div class="card">
-                <h4>Comparativo Radar</h4>
-                <div class="chart-container"><canvas id="c-radar"></canvas></div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <small>Maior Impacto</small>
+                <h3 id="p-forte">Resultados</h3>
             </div>
-            <div class="card">
-                <h4>Evolução Semestral</h4>
-                <div class="chart-container"><canvas id="c-line"></canvas></div>
+            <div class="stat-card">
+                <small>Gratificação (40%)</small>
+                <h3 id="p-bonus">Elegível</h3>
             </div>
-            <div class="card full">
-                <h4>Detalhamento por Competência (Semáforo)</h4>
-                <div class="chart-container"><canvas id="c-bar"></canvas></div>
+            <div class="stat-card">
+                <small>Pontuação vs Meta</small>
+                <h3 id="p-meta">100%</h3>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="card-chart">
+                <h4>Equilíbrio de Atuação</h4>
+                <div style="flex-grow:1"><canvas id="c-radar"></canvas></div>
+            </div>
+            <div class="card-chart">
+                <h4>Distribuição de Pontos</h4>
+                <div style="flex-grow:1"><canvas id="c-pie"></canvas></div>
+            </div>
+            <div class="card-chart full">
+                <h4>Performance por Categoria (Max 100 pts)</h4>
+                <div style="flex-grow:1"><canvas id="c-bar"></canvas></div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    const comps = ['Comunicação', 'Proatividade', 'Liderança', 'Equipe', 'Resultados'];
-    let curr = 0;
+    const categorias = ['Resultados', 'Gestão Pessoas', 'Comprometimento', 'Contribuição', 'Cultura'];
+    const pesosMax = [40, 25, 15, 10, 10]; // Pesos da sua tabela
+    let atual = 0;
+
     const gestores = [
-        { n: 'Fabio Henrique Bethiol', r: 'GERENTE A.FINANCEIRO', v: [8.5, 9, 7.8, 8.2, 9], h: [7.5, 7.8, 8.0, 8.2, 8.5, 8.6] },
-        { n: 'Iolanda Rocha Volpe', r: 'COORD DP & RH', v: [9.5, 8.8, 9.2, 9, 9.5], h: [8.8, 8.9, 9.0, 9.1, 9.2, 9.2] },
-        { n: 'João Aparecido Santos', r: 'GERENTE SEGURANÇA', v: [7.5, 8, 8, 7.8, 8.2], h: [7.0, 7.2, 7.5, 7.8, 7.9, 8.0] },
-        { n: 'Ricardo Cecconi Jr', r: 'GERENTE GERAL', v: [9.2, 9.5, 9.8, 9.4, 9.5], h: [8.5, 8.8, 9.0, 9.2, 9.4, 9.5] },
-        { n: 'Rodrigo Donizete Costa', r: 'GERENTE MANUT & ENGENHARIA', v: [8, 7.5, 8.5, 8, 7.8], h: [7.8, 7.9, 8.0, 8.1, 8.2, 8.1] }
+        { n: 'Fabio Henrique Bethiol', r: 'GERENTE FINANCEIRO', v: [40, 25, 15, 10, 10] },
+        { n: 'Iolanda Rocha Volpe', r: 'COORD DP & RH', v: [40, 20, 10, 10, 5] },
+        { n: 'João Aparecido Santos', r: 'GERENTE SEGURANÇA', v: [35, 22, 12, 8, 9] },
+        { n: 'Ricardo Cecconi Jr', r: 'GERENTE GERAL', v: [40, 25, 15, 10, 10] },
+        { n: 'Rodrigo Donizete Costa', r: 'GERENTE ENGENHARIA', v: [5, 7, 5, 5, 7] }
     ];
 
-    let radar, line, bar;
+    let radar, pie, bar;
 
     function init() {
-        const common = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+        const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } };
 
         radar = new Chart(document.getElementById('c-radar'), {
             type: 'radar',
-            data: { labels: comps, datasets: [
-                { label: 'Gestor 1', data: [], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', borderWidth: 3 },
-                { label: 'Gestor 2', data: [], backgroundColor: 'rgba(239, 68, 68, 0.1)', borderColor: '#ef4444', borderWidth: 2, borderDash: [5, 5] }
-            ]},
-            options: common
+            data: { labels: categorias, datasets: [{ data: [], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', borderWidth: 2 }] },
+            options: { ...opt, plugins: { legend: { display: false } } }
         });
 
-        line = new Chart(document.getElementById('c-line'), {
-            type: 'line',
-            data: { labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'], datasets: [{ data: [], borderColor: '#3b82f6', tension: 0.4, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.05)' }] },
-            options: common
+        pie = new Chart(document.getElementById('c-pie'), {
+            type: 'doughnut',
+            data: { labels: categorias, datasets: [{ data: [], backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'] }] },
+            options: opt
         });
 
         bar = new Chart(document.getElementById('c-bar'), {
             type: 'bar',
-            data: { labels: comps, datasets: [{ data: [], backgroundColor: [] }] },
-            options: { ...common, indexAxis: 'y', scales: { x: { max: 10 } } }
+            data: { labels: categorias, datasets: [{ data: [], backgroundColor: '#3b82f6', borderRadius: 8 }] },
+            options: { ...opt, indexAxis: 'y', scales: { x: { max: 40 } } }
         });
 
-        // Preencher select de comparação
-        const sel = document.getElementById('compare-select');
-        gestores.forEach((g, i) => sel.innerHTML += `<option value="${i}">${g.n}</option>`);
-
-        render();
+        renderList();
         load(0);
     }
 
-    function render() {
-        const t = document.getElementById('search').value.toLowerCase();
-        const l = document.getElementById('list');
-        l.innerHTML = '';
+    function renderList() {
+        const list = document.getElementById('list');
+        list.innerHTML = '';
         gestores.forEach((g, i) => {
-            if (g.n.toLowerCase().includes(t)) {
-                const div = document.createElement('div');
-                div.className = `item ${i === curr ? 'active' : ''}`;
-                div.innerHTML = `${g.n}<br><small>${g.r}</small>`;
-                div.onclick = () => load(i);
-                l.appendChild(div);
-            }
+            list.innerHTML += `<div class="item ${i === atual ? 'active' : ''}" onclick="load(${i})">${g.n}</div>`;
         });
-        updateRanking();
     }
 
     function load(i) {
-        curr = i;
+        atual = i;
         const g = gestores[i];
         document.getElementById('h-name').innerText = g.n;
         document.getElementById('h-role').innerText = g.r;
-        
-        const ins = document.getElementById('inputs');
-        ins.innerHTML = '';
-        comps.forEach((c, j) => {
-            ins.innerHTML += `<div class="row"><label>${c}</label><input type="number" value="${g.v[j]}" step="0.1" oninput="upd(${j}, this.value)"></div>`;
+
+        const inputs = document.getElementById('inputs-area');
+        inputs.innerHTML = '';
+        categorias.forEach((cat, j) => {
+            inputs.innerHTML += `
+                <div class="row">
+                    <label>${cat} (max ${pesosMax[j]})</label>
+                    <input type="number" value="${g.v[j]}" max="${pesosMax[j]}" oninput="upd(${j}, this.value)">
+                </div>`;
         });
         refresh();
-        render();
+        renderList();
     }
 
-    function upd(j, v) {
-        gestores[curr].v[j] = parseFloat(v) || 0;
+    function upd(j, val) {
+        gestores[atual].v[j] = parseFloat(val) || 0;
         refresh();
     }
 
     function refresh() {
-        const g = gestores[curr];
-        const avg = (g.v.reduce((a, b) => a + b, 0) / 5).toFixed(1);
-        const badge = document.getElementById('avg-badge');
-        badge.innerText = avg;
+        const v = gestores[atual].v;
+        const total = v.reduce((a, b) => a + b, 0);
         
-        // Cores do Semáforo
-        const color = avg < 7 ? '#ef4444' : (avg < 8.5 ? '#f59e0b' : '#22c55e');
-        badge.style.backgroundColor = color;
-
-        // Atualizar Radar (Individual + Comparativo)
-        radar.data.datasets[0].data = g.v;
-        const compIdx = document.getElementById('compare-select').value;
-        if(compIdx !== "") {
-            radar.data.datasets[1].data = gestores[compIdx].v;
-        } else {
-            radar.data.datasets[1].data = [];
-        }
-        radar.update('none');
-
-        // Atualizar Linha
-        line.data.datasets[0].data = g.h;
-        line.update('none');
-
-        // Atualizar Barras com cores individuais por nota
-        bar.data.datasets[0].data = g.v;
-        bar.data.datasets[0].backgroundColor = g.v.map(v => v < 7 ? '#ef4444' : (v < 8.5 ? '#f59e0b' : '#22c55e'));
-        bar.update('none');
+        document.getElementById('h-total').innerText = total;
         
-        updateRanking();
+        const badge = document.getElementById('h-class');
+        if (total >= 90) { badge.innerText = "EXCELENTE"; badge.style.backgroundColor = "#22c55e"; }
+        else if (total >= 60) { badge.innerText = "REGULAR"; badge.style.backgroundColor = "#f59e0b"; }
+        else { badge.innerText = "INSATISFATÓRIO"; badge.style.backgroundColor = "#ef4444"; }
+
+        document.getElementById('p-bonus').innerText = total >= 90 ? "ELEGÍVEL (40%)" : "NÃO ELEGÍVEL";
+        document.getElementById('p-meta').innerText = total + "%";
+
+        radar.data.datasets[0].data = v; radar.update();
+        pie.data.datasets[0].data = v; pie.update();
+        bar.data.datasets[0].data = v; bar.update();
     }
 
-    function updateRanking() {
-        const sorted = [...gestores].sort((a, b) => {
-            const avgA = a.v.reduce((x, y) => x + y, 0);
-            const avgB = b.v.reduce((x, y) => x + y, 0);
-            return avgB - avgA;
-        });
-
-        const rDiv = document.getElementById('top-ranking');
-        rDiv.innerHTML = '<span style="font-size:11px; padding-top:5px">TOP PERFORMANCE:</span>';
-        sorted.slice(0, 3).forEach((g, i) => {
-            const avg = (g.v.reduce((a, b) => a + b, 0) / 5).toFixed(1);
-            rDiv.innerHTML += `<div class="rank-pill">${i+1}º ${g.n.split(' ')[0]} (${avg})</div>`;
-        });
-    }
-
-    window.onload = () => setTimeout(init, 500);
+    window.onload = init;
 </script>
 </body>
 </html>
