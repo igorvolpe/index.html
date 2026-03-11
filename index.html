@@ -3,38 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dash RH - Editor em Tempo Real</title>
+    <title>Dashboard RH - Gestão Total</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* RESOLUÇÃO 100% E SEM ROLAGEM */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        html, body { width: 100%; height: 100%; overflow: hidden; background-color: #0f172a; }
+        body, html { width: 100%; height: 100%; overflow: hidden; background-color: #0f172a; }
         .container { display: flex; width: 100vw; height: 100vh; }
 
-        /* SIDEBAR */
-        .sidebar { width: 300px; background: #1e293b; display: flex; flex-direction: column; padding: 15px; border-right: 1px solid #334155; }
-        .search-box { padding: 10px; border-radius: 6px; border: none; background: #0f172a; color: white; margin-bottom: 15px; width: 100%; }
-        .employee-list { flex-grow: 1; overflow-y: auto; }
-        .employee-card { padding: 12px; border-radius: 8px; cursor: pointer; margin-bottom: 8px; background: #334155; border: 1px solid transparent; }
-        .employee-card.active { background: #3b82f6; border-color: #60a5fa; }
-        .employee-card strong { display: block; font-size: 13px; }
-        .employee-card span { font-size: 10px; color: #cbd5e1; }
+        /* LADO ESQUERDO: BUSCA E LISTA */
+        .sidebar { 
+            width: 320px; background: #1e293b; color: white; 
+            display: flex; flex-direction: column; padding: 15px; border-right: 1px solid #334155; 
+        }
+        .search-box { 
+            padding: 10px; border-radius: 6px; border: none; background: #0f172a; 
+            color: white; margin-bottom: 10px; width: 100%; font-size: 13px;
+        }
+        .emp-list { flex-grow: 1; overflow-y: auto; margin-bottom: 10px; }
+        .emp-item { 
+            padding: 10px; border-radius: 6px; cursor: pointer; margin-bottom: 5px; 
+            background: #334155; font-size: 12px; transition: 0.2s;
+        }
+        .emp-item.active { background: #3b82f6; font-weight: bold; }
+        .emp-item span { display: block; font-size: 10px; color: #cbd5e1; font-weight: normal; }
 
-        /* PAINEL DE EDIÇÃO (A Mágica acontece aqui) */
-        .editor-panel { background: #1e293b; padding: 15px; border-top: 1px solid #334155; margin-top: auto; border-radius: 8px; }
-        .editor-panel h3 { font-size: 11px; color: #94a3b8; margin-bottom: 10px; text-transform: uppercase; }
-        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .input-group label { display: block; font-size: 9px; color: #cbd5e1; margin-bottom: 2px; }
-        .input-group input { width: 100%; padding: 5px; border-radius: 4px; border: none; background: #0f172a; color: #3b82f6; font-weight: bold; text-align: center; }
+        /* PAINEL DE EDIÇÃO DINÂMICO */
+        .editor-box { background: #0f172a; padding: 15px; border-radius: 8px; border-top: 3px solid #3b82f6; }
+        .editor-box h3 { font-size: 11px; color: #3b82f6; margin-bottom: 10px; text-transform: uppercase; }
+        .input-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+        .input-row label { font-size: 11px; color: #fff; }
+        .input-row input { width: 55px; padding: 4px; border-radius: 4px; border: none; text-align: center; font-weight: bold; color: #1e293b; }
 
-        /* CONTEÚDO PRINCIPAL */
-        .main { flex-grow: 1; display: flex; flex-direction: column; padding: 15px; background: #f1f5f9; gap: 10px; }
-        .header { background: white; padding: 12px 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        /* ÁREA DOS GRÁFICOS */
+        .main { flex-grow: 1; display: flex; flex-direction: column; padding: 15px; gap: 10px; background: #f1f5f9; }
+        .header { 
+            background: white; padding: 15px; border-radius: 10px; 
+            display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
         .header h1 { font-size: 18px; color: #1e293b; }
-        
-        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1.2fr; gap: 10px; flex-grow: 1; min-height: 0; }
-        .chart-item { background: white; border-radius: 10px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
-        .chart-item.full { grid-column: span 2; }
-        .chart-item h3 { font-size: 11px; color: #64748b; margin-bottom: 8px; text-transform: uppercase; }
+        .avg-circle { background: #22c55e; color: white; padding: 8px 15px; border-radius: 30px; font-weight: bold; font-size: 14px; }
+
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; flex-grow: 1; min-height: 0; }
+        .chart-card { background: white; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .chart-card.full { grid-column: span 2; }
+        .chart-card h4 { font-size: 11px; color: #64748b; margin-bottom: 8px; text-transform: uppercase; }
         .canvas-container { flex-grow: 1; position: relative; min-height: 0; }
     </style>
 </head>
@@ -42,122 +55,26 @@
 
 <div class="container">
     <div class="sidebar">
-        <h2 style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">GESTORES</h2>
-        <input type="text" id="searchInput" class="search-box" placeholder="Pesquisar..." onkeyup="filterList()">
-        <div class="employee-list" id="list"></div>
+        <h2 style="font-size: 12px; margin-bottom: 10px; color: #94a3b8;">PESQUISAR GESTOR</h2>
+        <input type="text" id="search" class="search-box" placeholder="Nome ou cargo..." onkeyup="renderList()">
+        
+        <div class="emp-list" id="empList"></div>
 
-        <div class="editor-panel" id="editor">
-            <h3>📝 Editar Notas Atuais</h3>
-            <div class="input-grid" id="inputGrid">
-                </div>
-            <p style="font-size: 9px; color: #64748b; margin-top: 10px;">* A média é calculada automaticamente ao digitar.</p>
+        <div class="editor-box">
+            <h3 id="editorTitle">Editar Notas</h3>
+            <div id="inputGroup"></div>
         </div>
     </div>
 
     <div class="main">
         <div class="header">
             <div>
-                <h1 id="displayName">Selecione um Gestor</h1>
-                <div id="displayRole" style="font-size: 12px; color: #64748b; font-weight: 600;">---</div>
+                <h1 id="nameTop">Selecione um Gestor</h1>
+                <p id="roleTop" style="font-size: 12px; color: #64748b;">---</p>
             </div>
-            <div style="background: #dcfce7; color: #166534; padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: bold;">
-                Média Final: <span id="displayAvg">0.0</span>
-            </div>
+            <div class="avg-circle">Média: <span id="avgTop">0.0</span></div>
         </div>
 
         <div class="charts-grid">
-            <div class="chart-item"><div class="canvas-container"><canvas id="radarChart"></canvas></div></div>
-            <div class="chart-item"><div class="canvas-container"><canvas id="barMetaChart"></canvas></div></div>
-            <div class="chart-item full">
-                <h3>Detalhamento por Competência</h3>
-                <div class="canvas-container"><canvas id="detailChart"></canvas></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    const labels = ['Comunicação', 'Proatividade', 'Liderança', 'Equipe', 'Resultados'];
-    let currentIdx = 0;
-
-    const employees = [
-        { n: 'Fabio Henrique Bethiol', c: 'GERENTE A.FINANCEIRO', notes: [8.5, 9.2, 7.8, 8.0, 9.5] },
-        { n: 'Iolanda Rocha Volpe', c: 'COORD DP & RH', notes: [9.8, 8.5, 9.5, 9.0, 9.2] },
-        { n: 'João Aparecido Santos', c: 'GERENTE SEGURANÇA', notes: [7.5, 8.0, 8.2, 7.8, 8.5] },
-        { n: 'Ricardo Cecconi Jr', c: 'GERENTE GERAL', notes: [9.2, 9.5, 9.8, 9.4, 9.0] },
-        { n: 'Rodrigo Donizete Costa', c: 'GERENTE MANUT & ENGENHARIA', notes: [8.0, 7.5, 8.8, 8.2, 7.9] }
-    ];
-
-    let radar, barMeta, detail;
-
-    function init() {
-        const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
-        
-        radar = new Chart(document.getElementById('radarChart'), { type: 'radar', data: { labels: labels, datasets: [{ data: [0,0,0,0,0], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6' }] }, options: opt });
-        barMeta = new Chart(document.getElementById('barMetaChart'), { type: 'bar', data: { labels: ['Nota Final', 'Meta'], datasets: [{ data: [0, 9], backgroundColor: ['#3b82f6', '#e2e8f0'] }] }, options: opt });
-        detail = new Chart(document.getElementById('detailChart'), { type: 'bar', data: { labels: labels, datasets: [{ data: [0,0,0,0,0], backgroundColor: '#10b981' }] }, options: { ...opt, indexAxis: 'y' } });
-
-        renderList();
-        updateDash(0);
-    }
-
-    function renderList() {
-        const term = document.getElementById('searchInput').value.toLowerCase();
-        const listDiv = document.getElementById('list');
-        listDiv.innerHTML = '';
-        employees.forEach((emp, i) => {
-            if (emp.n.toLowerCase().includes(term)) {
-                const card = document.createElement('div');
-                card.className = `employee-card ${i === currentIdx ? 'active' : ''}`;
-                card.onclick = () => updateDash(i);
-                card.innerHTML = `<strong>${emp.n}</strong><span>${emp.c}</span>`;
-                listDiv.appendChild(card);
-            }
-        });
-    }
-
-    function updateDash(idx) {
-        currentIdx = idx;
-        const emp = employees[idx];
-        const avg = (emp.notes.reduce((a, b) => a + b, 0) / 5).toFixed(1);
-
-        document.getElementById('displayName').innerText = emp.n;
-        document.getElementById('displayRole').innerText = emp.c;
-        document.getElementById('displayAvg').innerText = avg;
-
-        radar.data.datasets[0].data = emp.notes; radar.update();
-        barMeta.data.datasets[0].data = [avg, 9]; barMeta.update();
-        detail.data.datasets[0].data = emp.notes; detail.update();
-
-        // Criar os campos de input para as 5 notas
-        const grid = document.getElementById('inputGrid');
-        grid.innerHTML = '';
-        labels.forEach((lab, i) => {
-            grid.innerHTML += `<div class="input-group">
-                <label>${lab}</label>
-                <input type="number" value="${emp.notes[i]}" step="0.1" oninput="changeNote(${i}, this.value)">
-            </div>`;
-        });
-        renderList();
-    }
-
-    function changeNote(noteIdx, value) {
-        const val = parseFloat(value) || 0;
-        employees[currentIdx].notes[noteIdx] = val;
-        
-        // Atualiza média e gráficos instantaneamente
-        const newAvg = (employees[currentIdx].notes.reduce((a, b) => a + b, 0) / 5).toFixed(1);
-        document.getElementById('displayAvg').innerText = newAvg;
-        
-        radar.data.datasets[0].data = employees[currentIdx].notes; radar.update('none');
-        barMeta.data.datasets[0].data = [newAvg, 9]; barMeta.update('none');
-        detail.data.datasets[0].data = employees[currentIdx].notes; detail.update('none');
-    }
-
-    function filterList() { renderList(); }
-
-    window.onload = init;
-</script>
-
-</body>
-</html>
+            <div class="chart-card">
+                <h4>
