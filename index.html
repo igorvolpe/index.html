@@ -3,187 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SDA - Dashboard de Performance</title>
+    <title>SDA - Gestão Performance</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg: #0f172a; --card: #ffffff; --primary: #3b82f6; --success: #22c55e; --danger: #ef4444; --text: #1e293b; }
+        :root { --bg: #0f172a; --primary: #3b82f6; --success: #22c55e; --danger: #ef4444; }
+        
+        /* IMPEDE QUALQUER ROLAGEM NA TELA INTEIRA */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #f1f5f9; height: 100vh; display: flex; overflow: hidden; color: var(--text); }
+        body, html { width: 100%; height: 100vh; overflow: hidden; background-color: #f1f5f9; }
+        
+        .wrapper { display: flex; width: 100%; height: 100vh; }
 
-        /* SIDEBAR */
-        .sidebar { width: 280px; background: var(--bg); color: white; padding: 15px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .item { padding: 10px; background: #1e293b; margin-bottom: 5px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: 0.2s; border-left: 3px solid transparent; }
-        .item.active { background: var(--primary); border-left-color: white; font-weight: bold; }
-        .editor { background: #1e293b; padding: 10px; border-radius: 8px; margin-top: auto; }
-        .row { display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center; }
-        .row label { font-size: 10px; color: #94a3b8; }
-        .row input { width: 45px; text-align: center; border-radius: 4px; border: none; padding: 2px; font-weight: bold; font-size: 11px; }
+        /* SIDEBAR FIXA */
+        .sidebar { width: 260px; background: var(--bg); color: white; padding: 15px; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; }
+        .list-area { flex-grow: 1; overflow-y: auto; margin: 10px 0; padding-right: 5px; }
+        .item { padding: 8px; background: #1e293b; margin-bottom: 5px; border-radius: 6px; cursor: pointer; font-size: 11px; transition: 0.2s; border-left: 3px solid transparent; }
+        .item.active { background: var(--primary); border-left-color: white; }
+        
+        .editor { background: #1e293b; padding: 10px; border-radius: 8px; flex-shrink: 0; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 4px; align-items: center; }
+        .row label { font-size: 9px; color: #94a3b8; text-transform: uppercase; }
+        .row input { width: 40px; text-align: center; border-radius: 4px; border: none; padding: 2px; font-weight: bold; font-size: 11px; }
 
-        /* MAIN */
-        .main { flex: 1; padding: 15px; display: flex; flex-direction: column; gap: 10px; height: 100vh; }
-        .header { background: white; padding: 12px 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex-shrink: 0; }
-        .btn-comp { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; }
+        /* CONTEÚDO PRINCIPAL AJUSTADO */
+        .main { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 10px; height: 100vh; min-width: 0; }
+        
+        .header { height: 60px; background: white; padding: 0 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex-shrink: 0; }
+        .btn-comp { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; }
 
-        /* GRID DE GRÁFICOS - AJUSTADO PARA TELA */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 45vh 30vh; gap: 10px; flex-grow: 1; }
-        .card { background: white; border-radius: 10px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; min-height: 0; }
-        .card h4 { font-size: 11px; color: #64748b; text-transform: uppercase; margin-bottom: 8px; }
+        /* GRID TRAVADO NA ALTURA DA TELA */
+        .grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            grid-template-rows: calc(50vh - 55px) calc(50vh - 55px); /* Divide a tela em duas metades exatas descontando os espaços */
+            gap: 10px; 
+            flex: 1;
+        }
+        
+        .card { background: white; border-radius: 10px; padding: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; min-height: 0; }
+        .card h4 { font-size: 10px; color: #64748b; text-transform: uppercase; margin-bottom: 5px; flex-shrink: 0; }
         .full { grid-column: span 2; }
-        .chart-container { flex: 1; position: relative; min-height: 0; }
+        
+        /* CONTAINER DO GRÁFICO PRECISA DE TAMANHO RELATIVO */
+        .chart-box { flex: 1; position: relative; width: 100%; height: 100%; min-height: 0; }
 
         /* MODAL COMPARATIVO */
         #modal-comp { 
-            display: none; position: fixed; inset: 2%; background: white; z-index: 100; 
-            border-radius: 15px; box-shadow: 0 0 50px rgba(0,0,0,0.3); padding: 20px; flex-direction: column; 
+            display: none; position: fixed; inset: 20px; background: white; z-index: 100; 
+            border-radius: 15px; box-shadow: 0 0 40px rgba(0,0,0,0.3); padding: 20px; flex-direction: column; 
         }
-        .comp-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; flex: 1; min-height: 0; }
-        .winner-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; overflow-y: auto; padding-right: 5px; }
-        .winner-card { background: #f8fafc; padding: 10px; border-radius: 8px; border-left: 4px solid #cbd5e1; }
-        .winner-card.win-a { border-left-color: var(--primary); background: #eff6ff; }
-        .winner-card.win-b { border-left-color: var(--danger); background: #fef2f2; }
-    </style>
-</head>
-<body>
-
-<div class="sidebar">
-    <h3 style="font-size: 12px; margin-bottom: 10px; color: #94a3b8;">LISTA DE GESTORES</h3>
-    <div id="list" style="overflow-y:auto; flex: 1;"></div>
-    <div class="editor">
-        <h4 style="font-size: 10px; color: var(--primary); margin-bottom: 8px;">AJUSTAR NOTAS</h4>
-        <div id="inputs"></div>
-    </div>
-</div>
-
-<div class="main">
-    <div class="header">
-        <div><h2 id="h-name" style="font-size: 18px;">Nome</h2><p id="h-role" style="font-size: 12px; color: #64748b;">Cargo</p></div>
-        <button class="btn-comp" onclick="openComp()">📊 Comparar Gestores</button>
-        <div id="avg-badge" style="padding:10px 20px; border-radius:8px; color:white; font-size:20px; font-weight:bold">0</div>
-    </div>
-
-    <div class="grid">
-        <div class="card"><h4>Equilíbrio de Competências</h4><div class="chart-container"><canvas id="c-radar"></canvas></div></div>
-        <div class="card"><h4>Distribuição de Pesos</h4><div class="chart-container"><canvas id="c-pie"></canvas></div></div>
-        <div class="card full"><h4>Desempenho por Categoria</h4><div class="chart-container"><canvas id="c-bar"></canvas></div></div>
-    </div>
-</div>
-
-<div id="modal-comp">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h2>Comparativo de Performance Detalhado</h2>
-        <button onclick="closeComp()" style="background:#64748b; color:white; border:none; padding:5px 15px; border-radius:5px; cursor:pointer">Voltar ao Dashboard</button>
-    </div>
-    
-    <div style="display:flex; gap:10px; margin-bottom:15px;">
-        <select id="selA" onchange="updateComparison()" style="flex:1; padding:8px; border-radius:5px; border:1px solid #ddd;"></select>
-        <b style="align-self:center">VS</b>
-        <select id="selB" onchange="updateComparison()" style="flex:1; padding:8px; border-radius:5px; border:1px solid #ddd;"></select>
-    </div>
-
-    <div class="comp-grid">
-        <div class="card" style="box-shadow:none; border:1px solid #eee;">
-            <h4>Análise Visual Sobreposta</h4>
-            <div class="chart-container"><canvas id="c-comp-radar"></canvas></div>
-        </div>
-        <div class="winner-list" id="winner-list">
-            </div>
-    </div>
-</div>
-
-<script>
-    const labels = ['Resultados', 'Gestão Pessoas', 'Comprometimento', 'Contribuição', 'Cultura'];
-    const pesos = [40, 25, 15, 10, 10];
-    let current = 0;
-
-    const gestores = [
-        { n: 'Fabio Henrique Bethiol', r: 'GERENTE FINANCEIRO', v: [40, 25, 15, 10, 10] },
-        { n: 'Iolanda Rocha Volpe', r: 'COORD DP & RH', v: [40, 20, 10, 10, 5] },
-        { n: 'João Aparecido Santos', r: 'GERENTE SEGURANÇA', v: [35, 22, 12, 8, 9] },
-        { n: 'Ricardo Cecconi Jr', r: 'GERENTE GERAL', v: [40, 25, 15, 10, 10] },
-        { n: 'Rodrigo Donizete Costa', r: 'GERENTE ENGENHARIA', v: [5, 7, 5, 5, 7] }
-    ];
-
-    let radar, pie, bar, compRadar;
-
-    function init() {
-        const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
-        
-        radar = new Chart(document.getElementById('c-radar'), { type: 'radar', data: { labels: labels, datasets: [{ data: [], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', borderWidth: 2 }] }, options: opt });
-        pie = new Chart(document.getElementById('c-pie'), { type: 'doughnut', data: { labels: labels, datasets: [{ data: [], backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'] }] }, options: { ...opt, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } } });
-        bar = new Chart(document.getElementById('c-bar'), { type: 'bar', data: { labels: labels, datasets: [{ data: [], backgroundColor: '#3b82f6' }] }, options: { ...opt, indexAxis: 'y', scales: { x: { max: 40 } } } });
-        
-        compRadar = new Chart(document.getElementById('c-comp-radar'), { 
-            type: 'radar', 
-            data: { labels: labels, datasets: [
-                { label: 'Gestor A', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 3 },
-                { label: 'Gestor B', data: [], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 3 }
-            ]},
-            options: { ...opt, plugins: { legend: { display: true, position: 'top' } } }
-        });
-
-        const sA = document.getElementById('selA'); const sB = document.getElementById('selB');
-        gestores.forEach((g, i) => { sA.add(new Option(g.n, i)); sB.add(new Option(g.n, i)); });
-        sB.selectedIndex = 1;
-
-        render(); load(0);
-    }
-
-    function render() {
-        const list = document.getElementById('list'); list.innerHTML = '';
-        gestores.forEach((g, i) => {
-            const d = document.createElement('div');
-            d.className = `item ${i === current ? 'active' : ''}`;
-            d.innerHTML = g.n; d.onclick = () => load(i);
-            list.appendChild(d);
-        });
-    }
-
-    function load(i) {
-        current = i; const g = gestores[i];
-        document.getElementById('h-name').innerText = g.n;
-        document.getElementById('h-role').innerText = g.r;
-        const ins = document.getElementById('inputs'); ins.innerHTML = '';
-        labels.forEach((l, j) => { ins.innerHTML += `<div class="row"><label>${l}</label><input type="number" value="${g.v[j]}" max="${pesos[j]}" oninput="upd(${j}, this.value)"></div>`; });
-        refresh(); render();
-    }
-
-    function upd(j, v) { gestores[current].v[j] = parseFloat(v) || 0; refresh(); }
-
-    function refresh() {
-        const v = gestores[current].v; const tot = v.reduce((a, b) => a + b, 0);
-        const b = document.getElementById('avg-badge'); b.innerText = tot;
-        b.style.backgroundColor = tot >= 90 ? '#22c55e' : (tot >= 60 ? '#f59e0b' : '#ef4444');
-        radar.data.datasets[0].data = v; radar.update('none');
-        pie.data.datasets[0].data = v; pie.update('none');
-        bar.data.datasets[0].data = v; bar.update('none');
-    }
-
-    function openComp() { document.getElementById('modal-comp').style.display = 'flex'; updateComparison(); }
-    function closeComp() { document.getElementById('modal-comp').style.display = 'none'; }
-
-    function updateComparison() {
-        const gA = gestores[document.getElementById('selA').value];
-        const gB = gestores[document.getElementById('selB').value];
-        const winList = document.getElementById('winner-list'); winList.innerHTML = '';
-        
-        compRadar.data.datasets[0].label = gA.n; compRadar.data.datasets[0].data = gA.v;
-        compRadar.data.datasets[1].label = gB.n; compRadar.data.datasets[1].data = gB.v;
-        compRadar.update();
-
-        labels.forEach((l, j) => {
-            const diff = gA.v[j] - gB.v[j];
-            const winner = diff > 0 ? gA.n : (diff < 0 ? gB.n : 'Empate');
-            const cls = diff > 0 ? 'win-a' : (diff < 0 ? 'win-b' : '');
-            winList.innerHTML += `
-                <div class="winner-card ${cls}">
-                    <small style="font-weight:bold; color:#64748b">${l.toUpperCase()}</small>
-                    <div style="font-size:13px; margin:5px 0">Vencedor: <b>${winner}</b></div>
-                    <small>Diferença: ${Math.abs(diff).toFixed(1)} pts</small>
-                </div>`;
-        });
-    }
-
-    window.onload = () => setTimeout(init, 500);
-</script>
-</body>
-</html>
+        .comp-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1; min-height: 0; }
+        .winner-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; overflow-y: auto; }
+        .win-card { background: #f8fafc; padding: 10px; border-
