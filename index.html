@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard RH 2025</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* RESET DE MARGENS PARA ZERO ERRO */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #f4f7f9; color: #333; padding: 20px; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        
+        .grid-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .card { background: #fff; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-top: 4px solid #007bff; }
+        .card h3 { font-size: 14px; color: #666; text-transform: uppercase; }
+        .card p { font-size: 24px; font-weight: bold; margin-top: 10px; color: #222; }
+
+        .charts-section { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .chart-container { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); min-height: 400px; }
+        
+        h2 { font-size: 18px; margin-bottom: 15px; color: #444; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Desempenho por Competência - RH 2025</h1>
+        <div id="date">Fevereiro 2025</div>
+    </div>
+
+    <div class="grid-container">
+        <div class="card"><h3>Total Colaboradores</h3><p>48</p></div>
+        <div class="card" style="border-top-color: #28a745;"><h3>Média Geral</h3><p>8.4</p></div>
+        <div class="card" style="border-top-color: #ffc107;"><h3>Competência Foco</h3><p>Liderança</p></div>
+        <div class="card" style="border-top-color: #17a2b8;"><h3>Status</h3><p>Em Dia</p></div>
+    </div>
+
+    <div class="charts-section">
+        <div class="chart-container">
+            <h2>Análise de Competências (Radar)</h2>
+            <canvas id="radarChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h2>Desempenho por Colaborador</h2>
+            <canvas id="barChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // GRÁFiCO DE RADAR (Igual ao da sua foto)
+        const ctxRadar = document.getElementById('radarChart').getContext('2d');
+        new Chart(ctxRadar, {
+            type: 'radar',
+            data: {
+                labels: ['Comunicação', 'Proatividade', 'Liderança', 'Trabalho em Equipe', 'Foco em Resultados', 'Adaptabilidade'],
+                datasets: [{
+                    label: 'Média Atual',
+                    data: [8, 7, 9, 8.5, 7.5, 9],
+                    fill: true,
+                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                    borderColor: '#007bff',
+                    pointBackgroundColor: '#007bff'
+                }]
+            },
+            options: { scales: { r: { suggestMin: 0, suggestMax: 10 } } }
+        });
+
+        // GRÁFICO DE BARRAS
+        const ctxBar = document.getElementById('barChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['Ana', 'Bruno', 'Carla', 'Diego', 'Elena'],
+                datasets: [{
+                    label: 'Nota Final',
+                    data: [9.2, 8.1, 7.5, 9.8, 8.4],
+                    backgroundColor: '#007bff'
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    </script>
+</body>
+</html>
