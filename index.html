@@ -8,7 +8,7 @@
     <style>
         :root { 
             --bg-sidebar: #1e293b; 
-            --primary: #3b82f6; /* Azul Vibrante para a Barra */
+            --primary: #3b82f6; /* Azul vibrante para a barra e destaques */
             --accent: #6366f1; 
             --success: #10b981; 
             --gold: #f59e0b; 
@@ -24,12 +24,14 @@
         .item { padding: 12px; background: rgba(255,255,255,0.05); margin-bottom: 8px; border-radius: 8px; cursor: pointer; font-size: 11px; border-left: 4px solid transparent; }
         .item.active { background: var(--primary); border-left-color: white; font-weight: bold; }
         
-        /* EDITOR - REGRA 4x25 = 100 */
+        /* NOTAS TÉCNICAS */
         .editor { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1); }
         .row { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; }
         .row label { font-size: 9px; color: #cbd5e1; text-transform: uppercase; }
         .row input { width: 60px; text-align: center; border-radius: 6px; border: none; padding: 6px; font-weight: bold; background: #334155; color: white; }
-        .row input:disabled { background: var(--accent); color: white; border: 1px solid white; cursor: not-allowed; opacity: 1; }
+        
+        /* CAMPO RESULTADOS (TOTAL 100) */
+        .row input.total-field { background: #7c3aed; color: white; border: 1px solid white; cursor: not-allowed; }
 
         /* MAIN CONTENT */
         .main { flex: 1; display: flex; flex-direction: column; padding: 20px; gap: 20px; height: 100vh; }
@@ -37,11 +39,11 @@
         
         .grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: calc(45vh - 70px) calc(35vh - 70px); gap: 20px; flex-grow: 1; min-height: 0; }
         .card { background: white; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; min-height: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; }
-        .card h4 { font-size: 11px; color: #94a3b8; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px; }
+        .card h4 { font-size: 11px; color: #94a3b8; text-transform: uppercase; margin-bottom: 12px; }
         .full { grid-column: span 2; }
         .chart-box { position: relative; flex-grow: 1; width: 100%; height: 100%; min-height: 0; }
 
-        .badge-14 { padding: 12px 24px; border-radius: 12px; color: white; font-weight: 800; text-align: center; min-width: 180px; font-size: 14px; }
+        .badge-total { padding: 12px 24px; border-radius: 12px; color: white; font-weight: 800; text-align: center; min-width: 180px; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -58,44 +60,41 @@
 
     <div class="main">
         <div class="header">
-            <div><h2 id="h-name" style="font-size: 20px;">Selecionar Gestor</h2><p id="h-role" style="font-size: 12px; color: #64748b;">Aguardando...</p></div>
-            <div id="badge-14" class="badge-14">Aguardando Notas...</div>
+            <div><h2 id="h-name" style="font-size: 20px;">Selecionar Gestor</h2><p id="h-role" style="font-size: 12px; color: #64748b;">Cargo</p></div>
+            <div id="badge-total" class="badge-total">Pontuação: 0</div>
         </div>
 
         <div class="grid">
-            <div class="card"><h4>Radar de Competências</h4><div class="chart-box"><canvas id="c-radar"></canvas></div></div>
-            <div class="card"><h4>Distribuição</h4><div class="chart-box"><canvas id="c-pie"></canvas></div></div>
-            <div class="card full"><h4>Régua de Pontuação Total (Meta: 100 pts)</h4><div class="chart-box"><canvas id="c-bar"></canvas></div></div>
+            <div class="card"><h4>Equilíbrio</h4><div class="chart-box"><canvas id="c-radar"></canvas></div></div>
+            <div class="card"><h4>Percentual</h4><div class="chart-box"><canvas id="c-pie"></canvas></div></div>
+            <div class="card full"><h4>PONTUAÇÃO TOTAL (META 100)</h4><div class="chart-box"><canvas id="c-bar"></canvas></div></div>
         </div>
     </div>
 </div>
 
 <script>
-    // Definição da regra 4 x 25 = 100
-    const categorias = ['RESULTADOS', 'Gestão Pessoas', 'Comprometimento', 'Contribuição', 'Cultura'];
+    // Configuração: Resultados (Total) e os 4 tópicos com máximo de 25 cada
+    const categorias = ['RESULTADOS', 'GESTÃO PESSOAS', 'COMPROMETIMENTO', 'CONTRIBUIÇÃO', 'CULTURA'];
     const pesosMax = [100, 25, 25, 25, 25]; 
     
     let atual = 0;
     const gestores = [
-        { n: 'Gestor Modelo', r: 'LIDERANÇA', v: [100, 25, 25, 25, 25] },
-        { n: 'Exemplo Regular', r: 'COORDENAÇÃO', v: [60, 15, 15, 15, 15] }
+        { n: 'Gestor 1', r: 'GERENTE FINANCEIRO', v: [100, 25, 25, 25, 25] },
+        { n: 'Gestor 2', r: 'COORDENADOR DP', v: [60, 15, 15, 15, 15] }
     ];
 
     let radar, pie, bar;
 
     function init() {
-        const opt = { 
-            responsive: true, maintainAspectRatio: false, animation: false,
-            plugins: { legend: { display: false } }
-        };
+        const opt = { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } } };
         
-        radar = new Chart(document.getElementById('c-radar'), { type: 'radar', data: { labels: categorias.slice(1), datasets: [{ data: [], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6' }] }, options: opt });
+        radar = new Chart(document.getElementById('c-radar'), { type: 'radar', data: { labels: categorias.slice(1), datasets: [{ data: [], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6' }] }, options: { ...opt, scales: { r: { min: 0, max: 25 } } } });
         pie = new Chart(document.getElementById('c-pie'), { type: 'doughnut', data: { labels: categorias.slice(1), datasets: [{ data: [], backgroundColor: ['#10b981', '#f59e0b', '#8b5cf6', '#ec4899'] }] }, options: opt });
         
-        // Configuração da Barra: Cor Azul e Máximo 100
+        // GRÁFICO DE BARRA AZUL COM MÁXIMO DE 100
         bar = new Chart(document.getElementById('c-bar'), { 
             type: 'bar', 
-            data: { labels: ['PONTOS'], datasets: [{ data: [0], backgroundColor: '#3b82f6', borderRadius: 8 }] }, 
+            data: { labels: ['SOMA TOTAL'], datasets: [{ data: [0], backgroundColor: '#3b82f6', borderRadius: 8 }] }, 
             options: { ...opt, indexAxis: 'y', scales: { x: { min: 0, max: 100, ticks: { stepSize: 10 } } } } 
         });
 
@@ -105,10 +104,8 @@
     function renderList() {
         const list = document.getElementById('list'); list.innerHTML = '';
         gestores.forEach((g, i) => {
-            const d = document.createElement('div');
-            d.className = `item ${i === atual ? 'active' : ''}`;
-            d.innerHTML = g.n; d.onclick = () => load(i);
-            list.appendChild(d);
+            const d = document.createElement('div'); d.className = `item ${i === atual ? 'active' : ''}`;
+            d.innerHTML = g.n; d.onclick = () => load(i); list.appendChild(d);
         });
     }
 
@@ -122,7 +119,7 @@
             const isTotal = j === 0;
             ins.innerHTML += `<div class="row">
                 <label>${c}</label>
-                <input type="number" id="inp-${j}" value="${g.v[j]}" ${isTotal ? 'disabled' : ''} oninput="upd(${j}, this.value)">
+                <input type="number" id="inp-${j}" class="${isTotal ? 'total-field' : ''}" value="${g.v[j]}" ${isTotal ? 'readonly' : ''} oninput="upd(${j}, this.value)">
             </div>`;
         });
         refresh(); renderList();
@@ -133,7 +130,7 @@
         if(val > pesosMax[j]) val = pesosMax[j];
         gestores[atual].v[j] = val; 
         
-        // Cálculo Automático do Total (Máximo 100)
+        // SOMA AUTOMÁTICA ATÉ 100
         const soma = gestores[atual].v[1] + gestores[atual].v[2] + gestores[atual].v[3] + gestores[atual].v[4];
         gestores[atual].v[0] = soma;
         document.getElementById('inp-0').value = soma.toFixed(1);
@@ -144,10 +141,10 @@
     function refresh() {
         const v = gestores[atual].v; 
         const total = v[0];
-        const badge = document.getElementById('badge-14');
+        const badge = document.getElementById('badge-total');
         
         badge.style.backgroundColor = total >= 100 ? "var(--success)" : (total >= 80 ? "var(--gold)" : "var(--danger)");
-        badge.innerText = `TOTAL: ${total.toFixed(1)} / 100`;
+        badge.innerText = `PONTUAÇÃO: ${total.toFixed(1)} / 100`;
 
         radar.data.datasets[0].data = v.slice(1); radar.update();
         pie.data.datasets[0].data = v.slice(1); pie.update();
