@@ -3,105 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard RH - Resolução Total</title>
+    <title>Dash RH - Resolução Total</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* CONFIGURAÇÃO DE RESOLUÇÃO 100% */
-        html, body { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            overflow: hidden; /* Proíbe qualquer barra de rolagem */
-            background-color: #f0f2f5;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        /* RESET PARA 100% DE RESOLUÇÃO SEM MARGEM */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background-color: #f8fafc; }
 
-        .wrapper { display: flex; width: 100vw; height: 100vh; }
+        .app-container { display: flex; width: 100vw; height: 100vh; }
 
-        /* BARRA LATERAL FIXA */
+        /* SIDEBAR COM BUSCA */
         .sidebar { 
-            width: 250px; height: 100%; background: #1e293b; color: white; 
-            padding: 15px; display: flex; flex-direction: column; flex-shrink: 0;
+            width: 260px; background: #1e293b; color: white; 
+            display: flex; flex-direction: column; padding: 15px;
         }
-        .sidebar h2 { font-size: 14px; margin-bottom: 15px; color: #94a3b8; text-transform: uppercase; }
-        .input-group { margin-bottom: 10px; }
-        .input-group label { display: block; font-size: 11px; margin-bottom: 3px; }
-        .input-group input { 
-            width: 100%; padding: 6px; border-radius: 4px; border: none; font-size: 12px; 
-        }
-
-        /* ÁREA DOS GRÁFICOS (OCUPA O RESTANTE) */
-        .main-view { 
-            flex-grow: 1; display: flex; flex-direction: column; 
-            padding: 15px; gap: 15px; height: 100%; 
-        }
-
-        .header { height: 40px; display: flex; justify-content: space-between; align-items: center; }
-        .header h1 { font-size: 18px; color: #1e293b; }
-
-        .charts-row { 
-            flex-grow: 1; /* Ocupa todo o espaço vertical restante */
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; 
-            min-height: 0; /* Essencial para o gráfico não estourar a tela */
-        }
+        .sidebar h2 { font-size: 14px; margin-bottom: 15px; color: #94a3b8; }
         
-        .chart-box { 
-            background: white; border-radius: 8px; padding: 10px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        .search-box {
+            padding: 8px; border-radius: 5px; border: none; margin-bottom: 15px;
+            width: 100%; font-size: 13px; outline: none;
+        }
+
+        .employee-list { 
+            flex-grow: 1; overflow-y: auto; font-size: 12px; 
+            scrollbar-width: thin; scrollbar-color: #475569 #1e293b;
+        }
+        .employee-item { 
+            padding: 8px; border-bottom: 1px solid #334155; cursor: pointer;
+            display: flex; justify-content: space-between;
+        }
+        .employee-item:hover { background: #334155; }
+        .employee-item span.nota { color: #3b82f6; font-weight: bold; }
+
+        /* ÁREA PRINCIPAL */
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; padding: 10px; gap: 10px; }
+        
+        .header { height: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 16px; color: #1e293b; }
+
+        .charts-grid { 
+            display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px; flex-grow: 1; min-height: 0; 
+        }
+
+        .chart-card { 
+            background: white; border-radius: 8px; padding: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             display: flex; flex-direction: column; min-height: 0;
         }
-        .chart-box h3 { font-size: 13px; margin-bottom: 8px; color: #64748b; }
+        .chart-card h3 { font-size: 12px; margin-bottom: 8px; color: #64748b; text-transform: uppercase; }
         
-        /* CONTAINER DO CANVAS - RESOLUÇÃO DINÂMICA */
-        .canvas-wrapper { flex-grow: 1; position: relative; min-height: 0; }
-
-        button { 
-            background: #3b82f6; color: white; border: none; padding: 10px; 
-            border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: auto;
-        }
+        /* LIMITADOR DE TAMANHO DOS GRÁFICOS */
+        .canvas-holder { flex-grow: 1; position: relative; min-height: 0; width: 100%; }
     </style>
 </head>
 <body>
 
-    <div class="wrapper">
-        <div class="sidebar">
-            <h2>⚙️ Ajustar Dados</h2>
-            <div id="inputs-area"></div>
-            <button onclick="update()">Atualizar Dash</button>
+<div class="app-container">
+    <div class="sidebar">
+        <h2>👥 Funcionários</h2>
+        <input type="text" id="search" class="search-box" placeholder="🔎 Pesquisar nome..." onkeyup="filtrarNomes()">
+        <div class="employee-list" id="lista">
+            </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Dashboard Desempenho RH 2025</h1>
+            <div style="font-size: 12px; color: #64748b;" id="data"></div>
         </div>
 
-        <div class="main-view">
-            <div class="header">
-                <h1>Painel de Desempenho RH 2025</h1>
-                <span id="clock" style="color:#64748b; font-size: 12px;"></span>
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Análise de Competências</h3>
+                <div class="canvas-holder">
+                    <canvas id="radarChart"></canvas>
+                </div>
             </div>
 
-            <div class="charts-row">
-                <div class="chart-box">
-                    <h3>Média por Competência</h3>
-                    <div class="canvas-wrapper">
-                        <canvas id="radarChart"></canvas>
-                    </div>
-                </div>
-                <div class="chart-box">
-                    <h3>Performance Individual</h3>
-                    <div class="canvas-wrapper">
-                        <canvas id="barChart"></canvas>
-                    </div>
+            <div class="chart-card">
+                <h3>Ranking Individual</h3>
+                <div class="canvas-holder">
+                    <canvas id="barChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        // Dados padrão
-        let staff = [
-            {n: 'Colaborador A', v: 8.5},
-            {n: 'Colaborador B', v: 7.2},
-            {n: 'Colaborador C', v: 9.8},
-            {n: 'Colaborador D', v: 6.5}
-        ];
+<script>
+    // Dados baseados na sua imagem
+    const funcionarios = [
+        { nome: 'Alana', nota: 8.5 },
+        { nome: 'Alexandro', nota: 7.2 },
+        { nome: 'Aline', nota: 9.0 },
+        { nome: 'Ana Paula', nota: 8.8 },
+        { nome: 'Andreza', nota: 7.9 },
+        { nome: 'Beatriz', nota: 9.2 },
+        { nome: 'Caio', nota: 6.8 },
+        { nome: 'Daniela', nota: 8.4 },
+        { nome: 'Eduardo', nota: 7.5 },
+        { nome: 'Fernanda', nota: 9.5 }
+    ];
 
-        // Gerar inputs
-        const area = document.getElementById('inputs-area');
-        staff.forEach((s, i) => {
-            area.innerHTML += `<div class="input-group">
-                <label>${s.n}</label>
+    // Preencher Lista
+    function renderLista(dados) {
+        const lista = document.getElementById('lista');
+        lista.innerHTML = '';
+        dados.forEach(f => {
+            lista.innerHTML += `
+                <div class="employee-item">
+                    <span>${f.nome}</span>
+                    <span class="nota">${f.nota}</span>
+                </div>
+            `;
+        });
+    }
+
+    // Filtro de Busca
+    function filtrarNomes() {
+        const termo = document.getElementById('search').value.toLowerCase();
+        const filtrados = funcionarios.filter(f => f.nome.toLowerCase().includes(termo));
+        renderLista(filtrados);
+    }
+
+    // Configurações Globais para gráficos pequenos
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            r: { pointLabels: { font: { size: 10 } } }, // Fonte menor no radar
+            x: { ticks: { font: { size: 10 } } }        // Fonte menor nas barras
+        }
+    };
+
+    // Radar Chart
+    const ctxRadar = document.getElementById('radarChart').getContext('2d');
+    new Chart(ctxRadar, {
+        type: 'radar',
+        data: {
+            labels: ['Liderança', 'Técnica', 'Foco', 'Equipe', 'Entrega'],
+            datasets: [{
+                data: [8, 7, 9, 8, 7.5],
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderColor: '#3b82f6',
+                borderWidth: 2
+            }]
+        },
+        options: chartOptions
+    });
+
+    // Bar Chart
+    const ctxBar = document.getElementById('barChart').getContext('2d');
+    new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+            labels: funcionarios.map(f => f.nome),
+            datasets: [{
+                data: funcionarios.map(f => f.nota),
+                backgroundColor: '#3b82f6',
+                borderRadius: 4
+            }]
+        },
+        options: chartOptions
+    });
+
+    // Iniciar
+    renderLista(funcionarios);
+    document.getElementById('data').innerText = new Date().toLocaleDateString();
+</script>
+
+</body>
+</html>
