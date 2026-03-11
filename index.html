@@ -3,86 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dash RH - Resolução Total</title>
+    <title>Dashboard RH - Resolução Perfeita</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* RESET PARA 100% DE RESOLUÇÃO SEM MARGEM */
+        /* CSS PARA FORÇAR TUDO A CABER NA TELA */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        html, body { width: 100%; height: 100%; overflow: hidden; background-color: #f8fafc; }
-
-        .app-container { display: flex; width: 100vw; height: 100vh; }
-
-        /* SIDEBAR COM BUSCA */
-        .sidebar { 
-            width: 260px; background: #1e293b; color: white; 
-            display: flex; flex-direction: column; padding: 15px;
+        
+        html, body { 
+            width: 100%; height: 100%; 
+            overflow: hidden; /* Proíbe barras de rolagem */
+            background-color: #f1f5f9;
         }
-        .sidebar h2 { font-size: 14px; margin-bottom: 15px; color: #94a3b8; }
+
+        .container { 
+            display: flex; 
+            width: 100vw; 
+            height: 100vh; 
+        }
+
+        /* BARRA LATERAL */
+        .sidebar { 
+            width: 240px; background: #0f172a; color: white; 
+            display: flex; flex-direction: column; padding: 15px; flex-shrink: 0;
+        }
+        .sidebar h2 { font-size: 13px; color: #94a3b8; margin-bottom: 10px; text-transform: uppercase; }
         
         .search-box {
-            padding: 8px; border-radius: 5px; border: none; margin-bottom: 15px;
-            width: 100%; font-size: 13px; outline: none;
+            padding: 8px; border-radius: 4px; border: none; margin-bottom: 15px;
+            width: 100%; font-size: 12px; background: #1e293b; color: white;
         }
 
         .employee-list { 
-            flex-grow: 1; overflow-y: auto; font-size: 12px; 
-            scrollbar-width: thin; scrollbar-color: #475569 #1e293b;
+            flex-grow: 1; overflow-y: auto; font-size: 11px;
         }
         .employee-item { 
-            padding: 8px; border-bottom: 1px solid #334155; cursor: pointer;
+            padding: 6px; border-bottom: 1px solid #1e293b; cursor: pointer;
             display: flex; justify-content: space-between;
         }
         .employee-item:hover { background: #334155; }
-        .employee-item span.nota { color: #3b82f6; font-weight: bold; }
 
-        /* ÁREA PRINCIPAL */
-        .main-content { flex-grow: 1; display: flex; flex-direction: column; padding: 10px; gap: 10px; }
-        
+        /* ÁREA DOS GRÁFICOS */
+        .main { 
+            flex-grow: 1; padding: 10px; 
+            display: flex; flex-direction: column; gap: 10px;
+        }
+
         .header { height: 30px; display: flex; justify-content: space-between; align-items: center; }
         .header h1 { font-size: 16px; color: #1e293b; }
 
+        /* GRID QUE CONTROLA O TAMANHO DOS GRÁFICOS */
         .charts-grid { 
-            display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px; flex-grow: 1; min-height: 0; 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            height: calc(100% - 40px); /* Garante que os gráficos usem o resto da tela */
         }
 
         .chart-card { 
-            background: white; border-radius: 8px; padding: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            display: flex; flex-direction: column; min-height: 0;
+            background: white; border-radius: 8px; padding: 10px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column;
+            max-height: 100%; /* Impede de crescer além da grid */
         }
-        .chart-card h3 { font-size: 12px; margin-bottom: 8px; color: #64748b; text-transform: uppercase; }
         
-        /* LIMITADOR DE TAMANHO DOS GRÁFICOS */
-        .canvas-holder { flex-grow: 1; position: relative; min-height: 0; width: 100%; }
+        .chart-card h3 { font-size: 11px; margin-bottom: 5px; color: #64748b; }
+        
+        /* CONTAINER DO CANVAS COM TAMANHO FIXO */
+        .canvas-container { 
+            flex-grow: 1; 
+            position: relative; 
+            height: 100%; 
+            width: 100%; 
+        }
     </style>
 </head>
 <body>
 
-<div class="app-container">
+<div class="container">
     <div class="sidebar">
-        <h2>👥 Funcionários</h2>
-        <input type="text" id="search" class="search-box" placeholder="🔎 Pesquisar nome..." onkeyup="filtrarNomes()">
-        <div class="employee-list" id="lista">
-            </div>
+        <h2>👥 Colaboradores</h2>
+        <input type="text" id="search" class="search-box" placeholder="🔎 Pesquisar..." onkeyup="filtrar()">
+        <div class="employee-list" id="lista"></div>
     </div>
 
-    <div class="main-content">
+    <div class="main">
         <div class="header">
-            <h1>Dashboard Desempenho RH 2025</h1>
-            <div style="font-size: 12px; color: #64748b;" id="data"></div>
+            <h1>Desempenho RH 2025</h1>
+            <span id="data" style="font-size: 11px; color: #64748b;"></span>
         </div>
 
         <div class="charts-grid">
             <div class="chart-card">
-                <h3>Análise de Competências</h3>
-                <div class="canvas-holder">
+                <h3>Análise de Competências (Radar)</h3>
+                <div class="canvas-container">
                     <canvas id="radarChart"></canvas>
                 </div>
             </div>
 
             <div class="chart-card">
-                <h3>Ranking Individual</h3>
-                <div class="canvas-holder">
+                <h3>Ranking Geral</h3>
+                <div class="canvas-container">
                     <canvas id="barChart"></canvas>
                 </div>
             </div>
@@ -91,87 +111,64 @@
 </div>
 
 <script>
-    // Dados baseados na sua imagem
-    const funcionarios = [
-        { nome: 'Alana', nota: 8.5 },
-        { nome: 'Alexandro', nota: 7.2 },
-        { nome: 'Aline', nota: 9.0 },
-        { nome: 'Ana Paula', nota: 8.8 },
-        { nome: 'Andreza', nota: 7.9 },
-        { nome: 'Beatriz', nota: 9.2 },
-        { nome: 'Caio', nota: 6.8 },
-        { nome: 'Daniela', nota: 8.4 },
-        { nome: 'Eduardo', nota: 7.5 },
-        { nome: 'Fernanda', nota: 9.5 }
-    ];
+    const nomes = ['Alana', 'Alexandro', 'Aline', 'Ana Paula', 'Andreza', 'Beatriz', 'Caio', 'Daniela', 'Eduardo', 'Fernanda'];
+    const dados = nomes.map(n => ({ nome: n, nota: (Math.random() * 3 + 7).toFixed(1) }));
 
-    // Preencher Lista
-    function renderLista(dados) {
+    function filtrar() {
+        const termo = document.getElementById('search').value.toLowerCase();
         const lista = document.getElementById('lista');
         lista.innerHTML = '';
-        dados.forEach(f => {
-            lista.innerHTML += `
-                <div class="employee-item">
-                    <span>${f.nome}</span>
-                    <span class="nota">${f.nota}</span>
-                </div>
-            `;
+        dados.filter(f => f.nome.toLowerCase().includes(termo)).forEach(f => {
+            lista.innerHTML += `<div class="employee-item"><span>${f.nome}</span><strong>${f.nota}</strong></div>`;
         });
     }
 
-    // Filtro de Busca
-    function filtrarNomes() {
-        const termo = document.getElementById('search').value.toLowerCase();
-        const filtrados = funcionarios.filter(f => f.nome.toLowerCase().includes(termo));
-        renderLista(filtrados);
-    }
-
-    // Configurações Globais para gráficos pequenos
-    const chartOptions = {
+    const options = {
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio: false, // ISTO FORÇA O GRÁFICO A CABER NA CAIXA
         plugins: { legend: { display: false } },
         scales: {
-            r: { pointLabels: { font: { size: 10 } } }, // Fonte menor no radar
-            x: { ticks: { font: { size: 10 } } }        // Fonte menor nas barras
+            r: { 
+                ticks: { display: false },
+                pointLabels: { font: { size: 9 } } 
+            },
+            x: { ticks: { font: { size: 9 } } },
+            y: { ticks: { font: { size: 9 } } }
         }
     };
 
-    // Radar Chart
-    const ctxRadar = document.getElementById('radarChart').getContext('2d');
-    new Chart(ctxRadar, {
+    // Radar
+    new Chart(document.getElementById('radarChart'), {
         type: 'radar',
         data: {
             labels: ['Liderança', 'Técnica', 'Foco', 'Equipe', 'Entrega'],
             datasets: [{
-                data: [8, 7, 9, 8, 7.5],
+                data: [8, 7, 9, 8, 7],
                 backgroundColor: 'rgba(59, 130, 246, 0.2)',
                 borderColor: '#3b82f6',
-                borderWidth: 2
+                borderWidth: 1.5,
+                pointRadius: 2
             }]
         },
-        options: chartOptions
+        options: options
     });
 
-    // Bar Chart
-    const ctxBar = document.getElementById('barChart').getContext('2d');
-    new Chart(ctxBar, {
+    // Barras
+    new Chart(document.getElementById('barChart'), {
         type: 'bar',
         data: {
-            labels: funcionarios.map(f => f.nome),
+            labels: nomes,
             datasets: [{
-                data: funcionarios.map(f => f.nota),
+                data: dados.map(d => d.nota),
                 backgroundColor: '#3b82f6',
-                borderRadius: 4
+                borderRadius: 3
             }]
         },
-        options: chartOptions
+        options: options
     });
 
-    // Iniciar
-    renderLista(funcionarios);
+    filtrar();
     document.getElementById('data').innerText = new Date().toLocaleDateString();
 </script>
-
 </body>
 </html>
