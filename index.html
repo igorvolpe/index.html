@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SACRES - Gestão de Performance</title>
+    <title>SACRES - Gestão Estratégica</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
@@ -17,53 +17,59 @@
 
         /* SIDEBAR */
         .sidebar { width: 320px; background: var(--bg-sidebar); color: white; padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .list-area { flex-grow: 1; overflow-y: auto; margin: 15px 0; max-height: 300px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-        .item { padding: 10px; background: rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 6px; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: space-between; }
-        .item.active { background: var(--primary); font-weight: bold; }
+        .list-area { flex-grow: 1; overflow-y: auto; margin: 15px 0; max-height: 350px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
         
-        /* NOVO GESTOR */
-        .add-area { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; margin-bottom: 15px; }
-        .add-area input { width: 100%; padding: 6px; margin-bottom: 5px; border-radius: 4px; border: none; font-size: 11px; }
-        .btn-add { width: 100%; background: var(--success); color: white; border: none; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 10px; }
+        /* ITEM DA LISTA COM BOTÃO EXCLUIR */
+        .item { padding: 10px; background: rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 6px; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: space-between; transition: 0.2s; }
+        .item:hover { background: rgba(255,255,255,0.15); }
+        .item.active { background: var(--primary); font-weight: bold; border-left: 4px solid white; }
+        .btn-del { color: #ff9999; border: none; background: none; cursor: pointer; font-weight: bold; padding: 0 5px; font-size: 14px; }
+        .btn-del:hover { color: var(--danger); transform: scale(1.2); }
 
-        /* EDITOR */
+        /* NOVO GESTOR */
+        .add-area { background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; margin-bottom: 15px; }
+        .add-area input { width: 100%; padding: 7px; margin-bottom: 6px; border-radius: 4px; border: none; font-size: 11px; font-weight: bold; }
+        .btn-add { width: 100%; background: var(--success); color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-weight: 900; font-size: 11px; }
+
+        /* EDITOR NOTAS */
         .editor { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
         .row { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; }
         .row label { font-size: 10px; color: #cbd5e1; text-transform: uppercase; font-weight: 900; }
-        .row input { width: 65px; text-align: center; border-radius: 6px; border: none; padding: 7px; font-weight: bold; background: #334155; color: white; }
+        .row input { width: 65px; text-align: center; border-radius: 6px; border: none; padding: 7px; font-weight: 900; background: #334155; color: white; }
         .row input.total-field { background: var(--accent); border: 1px solid white; }
 
-        /* MAIN */
+        /* ÁREA PRINCIPAL */
         .main { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
         .header { background: white; padding: 20px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .btn-pdf { background: #dc2626; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-pdf { background: #be123c; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 900; box-shadow: 0 4px 0 #9f1239; }
+        .btn-pdf:active { transform: translateY(2px); box-shadow: none; }
 
-        /* FILTRO DE COMPARATIVO */
-        .filter-area { display: flex; flex-wrap: wrap; gap: 10px; background: #f1f5f9; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
-        .filter-item { font-size: 10px; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .filter-area { display: flex; flex-wrap: wrap; gap: 10px; background: #f1f5f9; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
+        .filter-item { font-size: 10px; font-weight: 900; display: flex; align-items: center; gap: 5px; color: #475569; }
 
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); min-height: 320px; }
+        .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); min-height: 320px; border: 1px solid #f1f5f9; }
+        .card h4 { font-weight: 900; font-size: 11px; color: #64748b; margin-bottom: 15px; text-transform: uppercase; }
         .full { grid-column: span 2; }
-        .chart-box { height: 250px; position: relative; }
+        .chart-box { height: 260px; position: relative; }
     </style>
 </head>
 <body>
 
 <div class="wrapper" id="content-to-export">
     <div class="sidebar">
-        <h2 style="font-size: 22px; font-weight: 900; color: #60a5fa; margin-bottom: 20px;">SACRES</h2>
+        <h2 style="font-size: 24px; font-weight: 900; color: #60a5fa; margin-bottom: 20px; letter-spacing: 2px;">SACRES</h2>
         
         <div class="add-area">
-            <input type="text" id="new-name" placeholder="Nome do Gestor">
-            <input type="text" id="new-role" placeholder="Cargo">
-            <button class="btn-add" onclick="addGestor()">+ ADICIONAR NOVO</button>
+            <input type="text" id="new-name" placeholder="NOME DO FUNCIONÁRIO">
+            <input type="text" id="new-role" placeholder="CARGO">
+            <button class="btn-add" onclick="addGestor()">+ ADICIONAR AO SISTEMA</button>
         </div>
 
         <div id="list" class="list-area"></div>
 
         <div class="editor">
-            <h4 style="color: #60a5fa; margin-bottom: 12px; font-size: 10px; font-weight: 900;">NOTAS TÉCNICAS</h4>
+            <h4 style="color: #60a5fa; margin-bottom: 12px; font-size: 10px; font-weight: 900;">NOTAS TÉCNICAS (MAX 25)</h4>
             <div id="inputs"></div>
         </div>
     </div>
@@ -71,19 +77,19 @@
     <div class="main">
         <div class="header">
             <div>
-                <h2 id="h-name" style="font-weight: 900;">Selecionar Gestor</h2>
-                <p id="h-role" style="font-weight: 700; color: #64748b;">CARGO</p>
+                <h2 id="h-name" style="font-weight: 900; font-size: 22px; color: #1e293b;">Selecionar...</h2>
+                <p id="h-role" style="font-weight: 800; color: var(--primary); text-transform: uppercase;">Aguardando Seleção</p>
             </div>
-            <div id="badge-total" style="padding: 15px; border-radius: 10px; color: white; font-weight: 900; min-width: 150px; text-align: center;">TOTAL: 0</div>
-            <button class="btn-pdf" onclick="gerarPDF()">📄 GERAR RELATÓRIO PDF</button>
+            <div id="badge-total" style="padding: 15px 30px; border-radius: 12px; color: white; font-weight: 900; min-width: 180px; text-align: center; font-size: 16px;">TOTAL: 0</div>
+            <button class="btn-pdf" onclick="gerarPDF()">📄 BAIXAR PDF A4</button>
         </div>
 
         <div class="grid">
-            <div class="card"><h4>📊 EQUILÍBRIO</h4><div class="chart-box"><canvas id="c-radar"></canvas></div></div>
-            <div class="card"><h4>📈 DISTRIBUIÇÃO</h4><div class="chart-box"><canvas id="c-pie"></canvas></div></div>
+            <div class="card"><h4>📊 EQUILÍBRIO DE COMPETÊNCIAS</h4><div class="chart-box"><canvas id="c-radar"></canvas></div></div>
+            <div class="card"><h4>📈 DISTRIBUIÇÃO DAS NOTAS</h4><div class="chart-box"><canvas id="c-pie"></canvas></div></div>
             
             <div class="card full">
-                <h4 style="color: var(--primary); font-weight: 900; margin-bottom: 15px;">📊 COMPARATIVO FILTRADO (META 100)</h4>
+                <h4 style="color: var(--primary); font-weight: 900;">📊 COMPARATIVO ENTRE FUNCIONÁRIOS (META 100)</h4>
                 <div id="filter-container" class="filter-area"></div>
                 <div class="chart-box" style="height: 300px;"><canvas id="c-comp"></canvas></div>
             </div>
@@ -107,19 +113,30 @@
     function init() {
         const opt = { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } } };
         radar = new Chart(document.getElementById('c-radar'), { type: 'radar', data: { labels: categorias.slice(1), datasets: [{ data: [], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', borderWidth: 3 }] }, options: { ...opt, scales: { r: { min: 0, max: 25, pointLabels: { font: { weight: 'bold' } } } } } });
-        pie = new Chart(document.getElementById('c-pie'), { type: 'doughnut', data: { labels: categorias.slice(1), datasets: [{ data: [], backgroundColor: ['#10b981', '#f59e0b', '#8b5cf6', '#ec4899'] }] }, options: { ...opt, plugins: { legend: { display: true, position: 'bottom' } } } });
+        pie = new Chart(document.getElementById('c-pie'), { type: 'doughnut', data: { labels: categorias.slice(1), datasets: [{ data: [], backgroundColor: ['#10b981', '#f59e0b', '#8b5cf6', '#ec4899'] }] }, options: { ...opt, plugins: { legend: { display: true, position: 'bottom', labels: { font: { weight: 'bold' } } } } } });
         compChart = new Chart(document.getElementById('c-comp'), { type: 'bar', data: { labels: [], datasets: [{ data: [], backgroundColor: '#3b82f6', borderRadius: 8 }] }, options: { ...opt, indexAxis: 'y', scales: { x: { min: 0, max: 100 } } } });
 
         renderList(); renderFilters(); load(0);
     }
 
     function addGestor() {
-        const nome = document.getElementById('new-name').value;
-        const cargo = document.getElementById('new-role').value;
-        if(!nome || !cargo) return alert("Preencha nome e cargo!");
+        const nome = document.getElementById('new-name').value.toUpperCase();
+        const cargo = document.getElementById('new-role').value.toUpperCase();
+        if(!nome || !cargo) return alert("Preencha os dados!");
         gestores.push({ n: nome, r: cargo, v: [0, 0, 0, 0, 0], visible: true });
         document.getElementById('new-name').value = ''; document.getElementById('new-role').value = '';
         renderList(); renderFilters(); refresh();
+    }
+
+    // FUNÇÃO PARA EXCLUIR PESSOA
+    function excluirGestor(index, event) {
+        event.stopPropagation(); // Não seleciona o gestor ao clicar no X
+        if(confirm(`Deseja realmente excluir ${gestores[index].n}?`)) {
+            gestores.splice(index, 1);
+            if(atual >= gestores.length) atual = 0;
+            renderList(); renderFilters(); refresh();
+            if(gestores.length > 0) load(atual);
+        }
     }
 
     function renderList() {
@@ -127,7 +144,7 @@
         gestores.forEach((g, i) => {
             const d = document.createElement('div');
             d.className = `item ${i === atual ? 'active' : ''}`;
-            d.innerHTML = `<strong>${g.n}</strong>`;
+            d.innerHTML = `<strong>${g.n}</strong> <button class="btn-del" onclick="excluirGestor(${i}, event)">✕</button>`;
             d.onclick = () => load(i);
             list.appendChild(d);
         });
@@ -136,15 +153,14 @@
     function renderFilters() {
         const container = document.getElementById('filter-container'); container.innerHTML = '';
         gestores.forEach((g, i) => {
-            container.innerHTML += `<label class="filter-item">
-                <input type="checkbox" ${g.visible ? 'checked' : ''} onchange="toggleVis(${i})"> ${g.n}
-            </label>`;
+            container.innerHTML += `<label class="filter-item"><input type="checkbox" ${g.visible ? 'checked' : ''} onchange="toggleVis(${i})"> ${g.n}</label>`;
         });
     }
 
     function toggleVis(i) { gestores[i].visible = !gestores[i].visible; refresh(); }
 
     function load(i) {
+        if(gestores.length === 0) return;
         atual = i; const g = gestores[i];
         document.getElementById('h-name').innerText = g.n;
         document.getElementById('h-role').innerText = g.r;
@@ -165,6 +181,7 @@
     }
 
     function refresh() {
+        if(gestores.length === 0) return;
         const g = gestores[atual]; const total = g.v[0];
         const badge = document.getElementById('badge-total');
         badge.style.backgroundColor = total >= 100 ? "var(--success)" : (total >= 80 ? "var(--gold)" : "var(--primary)");
@@ -176,13 +193,19 @@
         const filtered = gestores.filter(x => x.visible);
         compChart.data.labels = filtered.map(x => x.n);
         compChart.data.datasets[0].data = filtered.map(x => x.v[0]);
-        compChart.data.datasets[0].backgroundColor = filtered.map(x => x.v[0] >= 100 ? '#10b981' : '#3b82f6');
         compChart.update();
     }
 
+    // PDF OTIMIZADO - DIMINUÍDO PARA CABER NO A4
     function gerarPDF() {
         const element = document.getElementById('content-to-export');
-        const opt = { margin: 5, filename: `Relatorio_SACRES_${gestores[atual].n}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
+        const opt = { 
+            margin: 10, 
+            filename: `Relatorio_SACRES_${gestores[atual].n}.pdf`, 
+            image: { type: 'jpeg', quality: 1 }, 
+            html2canvas: { scale: 1.5, useCORS: true }, // Escala menor para não estourar
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } 
+        };
         html2pdf().set(opt).from(element).save();
     }
 
