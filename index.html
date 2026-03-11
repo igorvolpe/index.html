@@ -3,177 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard RH Dinâmico</title>
+    <title>Dashboard RH - Resolução Total</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        
-        body { 
-            display: flex; 
-            height: 100vh; 
-            background-color: #f4f7f6; 
-            overflow: hidden; 
+        /* CONFIGURAÇÃO DE RESOLUÇÃO 100% */
+        html, body { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            overflow: hidden; /* Proíbe qualquer barra de rolagem */
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* BARRA LATERAL PARA TROCAR NOMES */
+        .wrapper { display: flex; width: 100vw; height: 100vh; }
+
+        /* BARRA LATERAL FIXA */
         .sidebar { 
-            width: 300px; 
-            background: #2c3e50; 
-            color: white; 
-            padding: 20px; 
-            overflow-y: auto; 
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            width: 250px; height: 100%; background: #1e293b; color: white; 
+            padding: 15px; display: flex; flex-direction: column; flex-shrink: 0;
         }
-        .sidebar h2 { font-size: 16px; margin-bottom: 20px; border-bottom: 1px solid #555; padding-bottom: 10px; }
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 12px; margin-bottom: 5px; color: #bdc3c7; }
+        .sidebar h2 { font-size: 14px; margin-bottom: 15px; color: #94a3b8; text-transform: uppercase; }
+        .input-group { margin-bottom: 10px; }
+        .input-group label { display: block; font-size: 11px; margin-bottom: 3px; }
         .input-group input { 
-            width: 100%; padding: 8px; border-radius: 4px; border: none; font-size: 14px; 
+            width: 100%; padding: 6px; border-radius: 4px; border: none; font-size: 12px; 
         }
 
-        /* ÁREA DO DASHBOARD */
-        .main-content { 
-            flex-grow: 1; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
+        /* ÁREA DOS GRÁFICOS (OCUPA O RESTANTE) */
+        .main-view { 
+            flex-grow: 1; display: flex; flex-direction: column; 
+            padding: 15px; gap: 15px; height: 100%; 
         }
-        
-        .header { display: flex; justify-content: space-between; align-items: center; }
-        .header h1 { font-size: 20px; color: #333; }
 
-        .charts-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 15px; 
-            flex-grow: 1; 
-            min-height: 0; 
+        .header { height: 40px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 18px; color: #1e293b; }
+
+        .charts-row { 
+            flex-grow: 1; /* Ocupa todo o espaço vertical restante */
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; 
+            min-height: 0; /* Essencial para o gráfico não estourar a tela */
         }
         
-        .chart-container { 
-            background: white; 
-            padding: 15px; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
-            display: flex; 
-            flex-direction: column;
+        .chart-box { 
+            background: white; border-radius: 8px; padding: 10px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; min-height: 0;
         }
-        .chart-container h3 { font-size: 14px; margin-bottom: 10px; color: #666; }
-        canvas { flex-grow: 1 !important; }
+        .chart-box h3 { font-size: 13px; margin-bottom: 8px; color: #64748b; }
+        
+        /* CONTAINER DO CANVAS - RESOLUÇÃO DINÂMICA */
+        .canvas-wrapper { flex-grow: 1; position: relative; min-height: 0; }
 
         button { 
-            width: 100%; padding: 10px; background: #27ae60; color: white; border: none; 
-            border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px;
+            background: #3b82f6; color: white; border: none; padding: 10px; 
+            border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: auto;
         }
-        button:hover { background: #2ecc71; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <h2>⚙️ Editar Dados</h2>
-        <div id="inputs-colaboradores">
-            </div>
-        <button onclick="atualizarGraficos()">Atualizar Dashboard</button>
-        <p style="font-size: 10px; margin-top: 20px; color: #95a5a6;">* Digite o nome e a nota (0 a 10)</p>
-    </div>
-
-    <div class="main-content">
-        <div class="header">
-            <h1>📊 Performance de Competências RH</h1>
-            <span id="data-atual"></span>
+    <div class="wrapper">
+        <div class="sidebar">
+            <h2>⚙️ Ajustar Dados</h2>
+            <div id="inputs-area"></div>
+            <button onclick="update()">Atualizar Dash</button>
         </div>
 
-        <div class="charts-grid">
-            <div class="chart-container">
-                <h3>Visão de Competências (Média)</h3>
-                <canvas id="radarChart"></canvas>
+        <div class="main-view">
+            <div class="header">
+                <h1>Painel de Desempenho RH 2025</h1>
+                <span id="clock" style="color:#64748b; font-size: 12px;"></span>
             </div>
-            <div class="chart-container">
-                <h3>Ranking de Colaboradores</h3>
-                <canvas id="barChart"></canvas>
+
+            <div class="charts-row">
+                <div class="chart-box">
+                    <h3>Média por Competência</h3>
+                    <div class="canvas-wrapper">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-box">
+                    <h3>Performance Individual</h3>
+                    <div class="canvas-wrapper">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Dados iniciais
-        let dados = [
-            { nome: 'Ana Silva', nota: 9.0 },
-            { nome: 'Bruno Costa', nota: 7.5 },
-            { nome: 'Carla Dias', nota: 8.2 },
-            { nome: 'Diego Melo', nota: 9.5 },
-            { nome: 'Elena Paz', nota: 8.8 }
+        // Dados padrão
+        let staff = [
+            {n: 'Colaborador A', v: 8.5},
+            {n: 'Colaborador B', v: 7.2},
+            {n: 'Colaborador C', v: 9.8},
+            {n: 'Colaborador D', v: 6.5}
         ];
 
-        // Criar campos de input automaticamente
-        const inputContainer = document.getElementById('inputs-colaboradores');
-        dados.forEach((item, index) => {
-            inputContainer.innerHTML += `
-                <div class="input-group">
-                    <label>Colaborador ${index + 1}</label>
-                    <input type="text" id="nome-${index}" value="${item.nome}" style="margin-bottom:5px">
-                    <input type="number" id="nota-${index}" value="${item.nota}" step="0.1" min="0" max="10">
-                </div>
-            `;
-        });
-
-        // Configuração dos Gráficos
-        const ctxRadar = document.getElementById('radarChart').getContext('2d');
-        const ctxBar = document.getElementById('barChart').getContext('2d');
-
-        let radarChart = new Chart(ctxRadar, {
-            type: 'radar',
-            data: {
-                labels: ['Liderança', 'Técnica', 'Proatividade', 'Equipe', 'Entrega'],
-                datasets: [{
-                    label: 'Média do Time',
-                    data: [8, 9, 7, 8.5, 8],
-                    backgroundColor: 'rgba(52, 152, 219, 0.2)',
-                    borderColor: '#3498db',
-                    borderWidth: 2
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-
-        let barChart = new Chart(ctxBar, {
-            type: 'bar',
-            data: {
-                labels: dados.map(d => d.nome),
-                datasets: [{
-                    label: 'Nota Final',
-                    data: dados.map(d => d.nota),
-                    backgroundColor: '#3498db'
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } }
-            }
-        });
-
-        // Função para atualizar
-        function atualizarGraficos() {
-            dados.forEach((item, index) => {
-                item.nome = document.getElementById(`nome-${index}`).value;
-                item.nota = parseFloat(document.getElementById(`nota-${index}`).value);
-            });
-
-            // Atualiza Gráfico de Barras
-            barChart.data.labels = dados.map(d => d.nome);
-            barChart.data.datasets[0].data = dados.map(d => d.nota);
-            barChart.update();
-
-            // Atualiza Radar (exemplo: mudando conforme a média das notas)
-            const mediaGeral = dados.reduce((a, b) => a + b.nota, 0) / dados.length;
-            radarChart.data.datasets[0].data = [mediaGeral, 8, mediaGeral - 1, 8.5, mediaGeral + 0.5];
-            radarChart.update();
-        }
-
-        document.getElementById('data-atual').innerText = new Date().toLocaleDateString();
-    </script>
-</body>
-</html>
+        // Gerar inputs
+        const area = document.getElementById('inputs-area');
+        staff.forEach((s, i) => {
+            area.innerHTML += `<div class="input-group">
+                <label>${s.n}</label>
