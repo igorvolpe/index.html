@@ -3,56 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SDA - Gestão Performance</title>
+    <title>SDA - Calculadora de Performance 100</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg: #0f172a; --primary: #3b82f6; --success: #22c55e; --gold: #f59e0b; --danger: #ef4444; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body, html { width: 100%; height: 100vh; overflow: hidden; background: #f1f5f9; }
+        :root { 
+            --bg-sidebar: #1e293b; 
+            --bg-main: #f8fafc;
+            --primary: #3b82f6; 
+            --accent: #6366f1; 
+            --success: #10b981; 
+            --gold: #f59e0b; 
+            --danger: #ef4444; 
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body, html { width: 100%; height: 100vh; overflow: hidden; background: var(--bg-main); }
         .wrapper { display: flex; width: 100%; height: 100vh; }
 
         /* SIDEBAR */
-        .sidebar { width: 260px; background: var(--bg); color: white; padding: 15px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .list-area { flex-grow: 1; overflow-y: auto; margin-bottom: 10px; }
-        .item { padding: 10px; background: #1e293b; margin-bottom: 5px; border-radius: 6px; cursor: pointer; font-size: 11px; border-left: 3px solid transparent; }
-        .item.active { background: var(--primary); border-left-color: white; font-weight: bold; }
+        .sidebar { width: 280px; background: var(--bg-sidebar); color: white; padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
+        .list-area { flex-grow: 1; overflow-y: auto; margin: 15px 0; }
+        .item { padding: 12px; background: rgba(255,255,255,0.05); margin-bottom: 8px; border-radius: 8px; cursor: pointer; font-size: 11px; transition: 0.3s; border-left: 4px solid transparent; }
+        .item.active { background: var(--accent); border-left-color: white; font-weight: bold; }
         
-        .editor { background: #1e293b; padding: 12px; border-radius: 8px; flex-shrink: 0; }
-        .row { display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center; }
-        .row label { font-size: 9px; color: #94a3b8; text-transform: uppercase; }
-        .row input { width: 45px; text-align: center; border-radius: 4px; border: none; padding: 3px; font-weight: bold; background: #334155; color: white; }
+        .editor { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1); }
+        .row { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; }
+        .row label { font-size: 9px; color: #cbd5e1; text-transform: uppercase; font-weight: 600; }
+        .row input { width: 55px; text-align: center; border-radius: 6px; border: none; padding: 5px; font-weight: bold; background: #334155; color: white; }
+        .row input:disabled { background: var(--accent); color: white; cursor: not-allowed; opacity: 1; }
 
         /* MAIN */
-        .main { flex: 1; display: flex; flex-direction: column; padding: 15px; gap: 15px; height: 100vh; }
-        .header { height: 70px; background: white; padding: 0 25px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); flex-shrink: 0; }
+        .main { flex: 1; display: flex; flex-direction: column; padding: 20px; gap: 20px; height: 100vh; }
+        .header { height: 85px; background: white; padding: 0 30px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         
-        .grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: calc(45vh - 60px) calc(35vh - 60px); gap: 15px; flex-grow: 1; min-height: 0; }
-        .card { background: white; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; min-height: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .card h4 { font-size: 10px; color: #64748b; text-transform: uppercase; margin-bottom: 10px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: calc(45vh - 70px) calc(35vh - 70px); gap: 20px; flex-grow: 1; min-height: 0; }
+        .card { background: white; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; min-height: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; }
+        .card h4 { font-size: 10px; color: #94a3b8; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px; }
         .full { grid-column: span 2; }
         .chart-box { position: relative; flex-grow: 1; width: 100%; height: 100%; min-height: 0; }
 
-        .badge-14 { padding: 8px 15px; border-radius: 8px; color: white; font-weight: bold; text-align: center; min-width: 140px; }
+        .badge-14 { padding: 12px 24px; border-radius: 12px; color: white; font-weight: 800; text-align: center; min-width: 180px; font-size: 14px; }
+        .btn-comp { background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 700; transition: 0.3s; }
 
-        /* MODAL AJUSTADO (MENOR E CENTRALIZADO) */
-        #modal-comp { 
-            display: none; 
-            position: fixed; 
-            top: 50%; left: 50%; 
-            transform: translate(-50%, -50%); /* Centraliza perfeitamente */
-            width: 80%; /* Ocupa 80% da largura em vez de quase tudo */
-            height: 75vh; /* Altura reduzida para não colar nas bordas */
-            background: white; 
-            z-index: 100; 
-            border-radius: 20px; 
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4); 
-            padding: 25px; 
-            flex-direction: column; 
-        }
-        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
-        
-        .comp-content { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; flex: 1; min-height: 0; margin-top: 15px; }
-        .winner-card { padding: 8px 12px; background: #f8fafc; border-left: 4px solid #3b82f6; border-radius: 6px; font-size: 11px; margin-bottom: 5px; }
+        /* MODAL */
+        #modal-comp { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75%; height: 70vh; background: white; z-index: 100; border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); padding: 30px; flex-direction: column; }
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 99; }
     </style>
 </head>
 <body>
@@ -61,67 +56,63 @@
 
 <div class="wrapper">
     <div class="sidebar">
-        <h3 style="font-size: 11px; color: #94a3b8; margin-bottom: 10px;">MENU GESTORES</h3>
+        <h3 style="font-size: 12px; color: #94a3b8; margin-bottom: 15px;">PAINEL SDA</h3>
         <div id="list" class="list-area"></div>
         <div class="editor">
-            <h4 style="color: var(--primary); margin-bottom: 8px; font-size: 10px;">NOTAS TÉCNICAS</h4>
+            <h4 style="color: #60a5fa; margin-bottom: 12px; font-size: 10px; font-weight: 800;">NOTAS TÉCNICAS</h4>
             <div id="inputs"></div>
         </div>
     </div>
 
     <div class="main">
         <div class="header">
-            <div><h2 id="h-name" style="font-size: 18px;">Nome</h2><p id="h-role" style="font-size: 11px; color: #64748b;">Cargo</p></div>
-            <div id="badge-14" class="badge-14">Nota: 0</div>
-            <button onclick="openModal()" style="background:var(--bg); color:white; border:none; padding:10px 18px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:12px;">📊 Comparativo</button>
+            <div><h2 id="h-name" style="font-size: 22px; color: #1e293b;">Selecionar...</h2><p id="h-role" style="font-size: 13px; color: #64748b;">Aguardando seleção</p></div>
+            <div id="badge-14" class="badge-14">Carregando...</div>
+            <button class="btn-comp" onclick="openModal()">📊 COMPARAR GESTORES</button>
         </div>
 
         <div class="grid">
-            <div class="card"><h4>Radar de Competências</h4><div class="chart-box"><canvas id="c-radar"></canvas></div></div>
-            <div class="card"><h4>Distribuição</h4><div class="chart-box"><canvas id="c-pie"></canvas></div></div>
-            <div class="card full"><h4>Régua para o 14º Salário (0 a 100 pts)</h4><div class="chart-box"><canvas id="c-bar"></canvas></div></div>
+            <div class="card"><h4>Perfil de Competências</h4><div class="chart-box"><canvas id="c-radar"></canvas></div></div>
+            <div class="card"><h4>Distribuição de Notas</h4><div class="chart-box"><canvas id="c-pie"></canvas></div></div>
+            <div class="card full"><h4>Meta Acumulada para 14º Salário (0 a 100)</h4><div class="chart-box"><canvas id="c-bar"></canvas></div></div>
         </div>
     </div>
 </div>
 
 <div id="modal-comp">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2 style="font-size: 18px;">Comparativo Direto</h2>
-        <button onclick="closeModal()" style="background:#64748b; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px;">Fechar</button>
+    <div style="display:flex; justify-content:space-between; align-items:center;"><h2>Análise Comparativa</h2><button onclick="closeModal()">FECHAR</button></div>
+    <div style="display:flex; gap:15px; margin-top:20px;">
+        <select id="selA" onchange="updateComp()" style="flex:1; padding:10px; border-radius:8px;"></select>
+        <select id="selB" onchange="updateComp()" style="flex:1; padding:10px; border-radius:8px;"></select>
     </div>
-    
-    <div style="display:flex; gap:10px; margin-top:15px;">
-        <select id="selA" onchange="updateComp()" style="flex:1; padding:8px; border-radius:6px; border:1px solid #ddd;"></select>
-        <select id="selB" onchange="updateComp()" style="flex:1; padding:8px; border-radius:6px; border:1px solid #ddd;"></select>
-    </div>
-
-    <div class="comp-content">
-        <div class="card" style="box-shadow:none; border:1px solid #f1f5f9;"><div class="chart-box"><canvas id="c-comp-radar"></canvas></div></div>
-        <div id="winner-list" style="overflow-y:auto; padding-right:5px;"></div>
+    <div style="display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; flex: 1; min-height: 0; margin-top: 20px;">
+        <div class="card" style="box-shadow:none; background:#fcfdfe;"><div class="chart-box"><canvas id="c-comp-radar"></canvas></div></div>
+        <div id="winner-list" style="overflow-y:auto;"></div>
     </div>
 </div>
 
 <script>
-    const categorias = ['Resultados', 'Gestão Pessoas', 'Comprometimento', 'Contribuição', 'Cultura'];
-    const pesosMax = [40, 25, 15, 10, 10];
+    // Agora 'PONTUAÇÃO TOTAL' é o primeiro índice, mas será calculado
+    const categorias = ['PONTUAÇÃO TOTAL', 'Gestão Pessoas', 'Comprometimento', 'Contribuição', 'Cultura'];
+    const pesosMax = [100, 25, 15, 10, 10]; // P. Total máximo é 100 (referência da meta)
     let atual = 0;
 
     const gestores = [
-        { n: 'Fabio Henrique Bethiol', r: 'GERENTE FINANCEIRO', v: [40, 25, 15, 10, 10] },
-        { n: 'Iolanda Rocha Volpe', r: 'COORD DP & RH', v: [40, 20, 10, 10, 5] },
-        { n: 'João Aparecido Santos', r: 'GERENTE SEGURANÇA', v: [35, 22, 12, 8, 9] },
-        { n: 'Ricardo Cecconi Jr', r: 'GERENTE GERAL', v: [40, 25, 15, 10, 10] },
-        { n: 'Rodrigo Donizete Costa', r: 'GERENTE ENGENHARIA', v: [5, 7, 5, 5, 7] }
+        { n: 'Fabio Henrique Bethiol', r: 'GERENTE FINANCEIRO', v: [0, 25, 15, 10, 10] },
+        { n: 'Iolanda Rocha Volpe', r: 'COORD DP & RH', v: [0, 20, 10, 10, 5] },
+        { n: 'João Aparecido Santos', r: 'GERENTE SEGURANÇA', v: [0, 22, 12, 8, 9] },
+        { n: 'Ricardo Cecconi Jr', r: 'GERENTE GERAL', v: [0, 25, 15, 10, 10] },
+        { n: 'Rodrigo Donizete Costa', r: 'GERENTE ENGENHARIA', v: [0, 7, 5, 5, 7] }
     ];
 
     let radar, pie, bar, compRadar;
 
     function init() {
         const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
-        radar = new Chart(document.getElementById('c-radar'), { type: 'radar', data: { labels: categorias, datasets: [{ data: [], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6' }] }, options: opt });
-        pie = new Chart(document.getElementById('c-pie'), { type: 'doughnut', data: { labels: categorias, datasets: [{ data: [], backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'] }] }, options: { ...opt, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 8, font: { size: 9 } } } } } });
-        bar = new Chart(document.getElementById('c-bar'), { type: 'bar', data: { labels: ['PONTOS ACUMULADOS'], datasets: [{ data: [0], borderRadius: 6 }] }, options: { ...opt, indexAxis: 'y', scales: { x: { min: 0, max: 100, ticks: { stepSize: 10 } } } } });
-        compRadar = new Chart(document.getElementById('c-comp-radar'), { type: 'radar', data: { labels: categorias, datasets: [{ label: 'Gestor A', data: [], borderColor: '#3b82f6' }, { label: 'Gestor B', data: [], borderColor: '#ef4444' }] }, options: { ...opt, plugins: { legend: { display: true } } } });
+        radar = new Chart(document.getElementById('c-radar'), { type: 'radar', data: { labels: categorias, datasets: [{ data: [], backgroundColor: 'rgba(99, 102, 241, 0.15)', borderColor: '#6366f1', borderWidth: 3 }] }, options: opt });
+        pie = new Chart(document.getElementById('c-pie'), { type: 'doughnut', data: { labels: categorias.slice(1), datasets: [{ data: [], backgroundColor: ['#10b981', '#f59e0b', '#8b5cf6', '#ec4899'] }] }, options: { ...opt, plugins: { legend: { display: true, position: 'bottom' } } } });
+        bar = new Chart(document.getElementById('c-bar'), { type: 'bar', data: { labels: ['PROGRESSO TOTAL'], datasets: [{ data: [0], borderRadius: 10 }] }, options: { ...opt, indexAxis: 'y', scales: { x: { min: 0, max: 100 } } } });
+        compRadar = new Chart(document.getElementById('c-comp-radar'), { type: 'radar', data: { labels: categorias, datasets: [{ label: 'A', data: [], borderColor: '#3b82f6' }, { label: 'B', data: [], borderColor: '#ef4444' }] }, options: opt });
 
         const sA = document.getElementById('selA'); const sB = document.getElementById('selB');
         gestores.forEach((g, i) => { sA.add(new Option(g.n, i)); sB.add(new Option(g.n, i)); });
@@ -143,8 +134,13 @@
         document.getElementById('h-name').innerText = g.n;
         document.getElementById('h-role').innerText = g.r;
         const ins = document.getElementById('inputs'); ins.innerHTML = '';
+        
         categorias.forEach((c, j) => {
-            ins.innerHTML += `<div class="row"><label>${c}</label><input type="number" value="${g.v[j]}" oninput="upd(${j}, this.value)"></div>`;
+            const isTotal = j === 0;
+            ins.innerHTML += `<div class="row">
+                <label>${c}</label>
+                <input type="number" id="inp-${j}" value="${g.v[j]}" ${isTotal ? 'disabled' : ''} oninput="upd(${j}, this.value)">
+            </div>`;
         });
         refresh(); renderList();
     }
@@ -152,41 +148,43 @@
     function upd(j, v) { 
         let val = parseFloat(v) || 0;
         if(val > pesosMax[j]) val = pesosMax[j];
-        gestores[atual].v[j] = val; refresh(); 
+        gestores[atual].v[j] = val; 
+        
+        // SOMA AUTOMÁTICA: O índice [0] (PONTUAÇÃO TOTAL) recebe a soma dos outros
+        const soma = gestores[atual].v[1] + gestores[atual].v[2] + gestores[atual].v[3] + gestores[atual].v[4];
+        gestores[atual].v[0] = soma;
+        
+        // Atualiza o campo visual do PONTUAÇÃO TOTAL que está desabilitado
+        document.getElementById('inp-0').value = soma.toFixed(1);
+        
+        refresh(); 
     }
 
     function refresh() {
-        const v = gestores[atual].v; const tot = v.reduce((a, b) => a + b, 0);
+        const v = gestores[atual].v; 
+        const totalCalculado = v[0]; // Agora o total já está no índice 0
         const badge = document.getElementById('badge-14');
-        let color = tot >= 100 ? "var(--success)" : (tot >= 80 ? "var(--gold)" : "var(--danger)");
+        
+        let color = totalCalculado >= 100 ? "var(--success)" : (totalCalculado >= 80 ? "var(--gold)" : "var(--danger)");
         badge.style.backgroundColor = color;
-        badge.innerText = tot >= 100 ? "🏆 14º LIBERADO" : `NOTA: ${tot.toFixed(1)} / 100`;
+        badge.innerText = totalCalculado >= 100 ? "🏆 14º LIBERADO" : `SOMA: ${totalCalculado.toFixed(1)} / 100`;
+
         radar.data.datasets[0].data = v; radar.update();
-        pie.data.datasets[0].data = v; pie.update();
-        bar.data.datasets[0].data = [tot]; bar.data.datasets[0].backgroundColor = color; bar.update();
+        pie.data.datasets[0].data = v.slice(1); pie.update();
+        bar.data.datasets[0].data = [totalCalculado]; 
+        bar.data.datasets[0].backgroundColor = color; 
+        bar.update();
     }
 
-    function openModal() { 
-        document.getElementById('modal-comp').style.display='flex'; 
-        document.getElementById('overlay').style.display='block'; 
-        updateComp(); 
-    }
-    function closeModal() { 
-        document.getElementById('modal-comp').style.display='none'; 
-        document.getElementById('overlay').style.display='none'; 
-    }
+    function openModal() { document.getElementById('modal-comp').style.display='flex'; document.getElementById('overlay').style.display='block'; updateComp(); }
+    function closeModal() { document.getElementById('modal-comp').style.display='none'; document.getElementById('overlay').style.display='none'; }
 
     function updateComp() {
         const gA = gestores[document.getElementById('selA').value];
         const gB = gestores[document.getElementById('selB').value];
-        const winList = document.getElementById('winner-list'); winList.innerHTML = '';
         compRadar.data.datasets[0].label = gA.n; compRadar.data.datasets[0].data = gA.v;
         compRadar.data.datasets[1].label = gB.n; compRadar.data.datasets[1].data = gB.v;
         compRadar.update();
-        categorias.forEach((c, i) => {
-            const win = gA.v[i] > gB.v[i] ? gA.n : (gB.v[i] > gA.v[i] ? gB.n : 'Empate');
-            winList.innerHTML += `<div class="winner-card"><b>${c}</b><br>Vencedor: ${win.split(' ')[0]}</div>`;
-        });
     }
 
     window.onload = () => setTimeout(init, 300);
