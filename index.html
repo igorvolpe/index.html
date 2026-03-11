@@ -8,7 +8,7 @@
     <style>
         :root { 
             --bg-sidebar: #1e293b; 
-            --primary: #3b82f6; 
+            --primary: #3b82f6; /* Azul Vibrante para a Barra */
             --accent: #6366f1; 
             --success: #10b981; 
             --gold: #f59e0b; 
@@ -24,7 +24,7 @@
         .item { padding: 12px; background: rgba(255,255,255,0.05); margin-bottom: 8px; border-radius: 8px; cursor: pointer; font-size: 11px; border-left: 4px solid transparent; }
         .item.active { background: var(--primary); border-left-color: white; font-weight: bold; }
         
-        /* EDITOR COM REGRA 4x25 = 100 */
+        /* EDITOR - REGRA 4x25 = 100 */
         .editor { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1); }
         .row { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; }
         .row label { font-size: 9px; color: #cbd5e1; text-transform: uppercase; }
@@ -41,7 +41,6 @@
         .full { grid-column: span 2; }
         .chart-box { position: relative; flex-grow: 1; width: 100%; height: 100%; min-height: 0; }
 
-        .btn-comp { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 13px; }
         .badge-14 { padding: 12px 24px; border-radius: 12px; color: white; font-weight: 800; text-align: center; min-width: 180px; font-size: 14px; }
     </style>
 </head>
@@ -52,52 +51,53 @@
         <h2 style="font-size: 14px; margin-bottom: 15px;">PAINEL SDA</h2>
         <div id="list" class="list-area"></div>
         <div class="editor">
-            <h4 style="color: #60a5fa; margin-bottom: 12px; font-size: 10px; font-weight: 800;">NOTAS TÉCNICAS (TOTAL 100)</h4>
+            <h4 style="color: #60a5fa; margin-bottom: 12px; font-size: 10px; font-weight: 800;">NOTAS TÉCNICAS</h4>
             <div id="inputs"></div>
         </div>
     </div>
 
     <div class="main">
         <div class="header">
-            <div><h2 id="h-name" style="font-size: 20px;">Selecionar Gestor</h2><p id="h-role" style="font-size: 12px; color: #64748b;">Aguardando seleção</p></div>
-            <div id="badge-14" class="badge-14">Carregando Notas...</div>
-            <button class="btn-comp" onclick="alert('Funcionalidade de Comparativo Aberta')">📊 COMPARATIVO</button>
+            <div><h2 id="h-name" style="font-size: 20px;">Selecionar Gestor</h2><p id="h-role" style="font-size: 12px; color: #64748b;">Aguardando...</p></div>
+            <div id="badge-14" class="badge-14">Aguardando Notas...</div>
         </div>
 
         <div class="grid">
-            <div class="card"><h4>Equilíbrio de Competências</h4><div class="chart-box"><canvas id="c-radar"></canvas></div></div>
-            <div class="card"><h4>Distribuição de Notas</h4><div class="chart-box"><canvas id="c-pie"></canvas></div></div>
-            <div class="card full"><h4>Régua para o Bônus Anual (Meta: 100 pts)</h4><div class="chart-box"><canvas id="c-bar"></canvas></div></div>
+            <div class="card"><h4>Radar de Competências</h4><div class="chart-box"><canvas id="c-radar"></canvas></div></div>
+            <div class="card"><h4>Distribuição</h4><div class="chart-box"><canvas id="c-pie"></canvas></div></div>
+            <div class="card full"><h4>Régua de Pontuação Total (Meta: 100 pts)</h4><div class="chart-box"><canvas id="c-bar"></canvas></div></div>
         </div>
     </div>
 </div>
 
 <script>
-    // Agora 'RESULTADOS' é o total, e os outros 4 valem 25 cada.
+    // Definição da regra 4 x 25 = 100
     const categorias = ['RESULTADOS', 'Gestão Pessoas', 'Comprometimento', 'Contribuição', 'Cultura'];
     const pesosMax = [100, 25, 25, 25, 25]; 
     
     let atual = 0;
     const gestores = [
-        { n: 'Fabio Henrique Bethiol', r: 'GERENTE FINANCEIRO', v: [100, 25, 25, 25, 25] },
-        { n: 'Iolanda Rocha Volpe', r: 'COORD DP & RH', v: [80, 20, 20, 20, 20] },
-        { n: 'Ricardo Cecconi Jr', r: 'GERENTE GERAL', v: [100, 25, 25, 25, 25] }
+        { n: 'Gestor Modelo', r: 'LIDERANÇA', v: [100, 25, 25, 25, 25] },
+        { n: 'Exemplo Regular', r: 'COORDENAÇÃO', v: [60, 15, 15, 15, 15] }
     ];
 
     let radar, pie, bar;
 
     function init() {
-        const universalOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: false,
-            plugins: { legend: { display: false } },
-            scales: { r: { min: 0, max: 25, ticks: { display: false } } }
+        const opt = { 
+            responsive: true, maintainAspectRatio: false, animation: false,
+            plugins: { legend: { display: false } }
         };
         
-        radar = new Chart(document.getElementById('c-radar'), { type: 'radar', data: { labels: categorias.slice(1), datasets: [{ data: [], backgroundColor: 'rgba(99, 102, 241, 0.15)', borderColor: '#6366f1', borderWidth: 2 }] }, options: universalOptions });
-        pie = new Chart(document.getElementById('c-pie'), { type: 'doughnut', data: { labels: categorias.slice(1), datasets: [{ data: [], backgroundColor: ['#10b981', '#f59e0b', '#8b5cf6', '#ec4899'] }] }, options: { ...universalOptions, plugins: { legend: { display: true, position: 'bottom' } }, scales: {} } });
-        bar = new Chart(document.getElementById('c-bar'), { type: 'bar', data: { labels: ['PONTUAÇÃO TOTAL'], datasets: [{ data: [0], borderRadius: 8 }] }, options: { ...universalOptions, indexAxis: 'y', scales: { x: { min: 0, max: 100, ticks: { stepSize: 10 } } } } });
+        radar = new Chart(document.getElementById('c-radar'), { type: 'radar', data: { labels: categorias.slice(1), datasets: [{ data: [], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6' }] }, options: opt });
+        pie = new Chart(document.getElementById('c-pie'), { type: 'doughnut', data: { labels: categorias.slice(1), datasets: [{ data: [], backgroundColor: ['#10b981', '#f59e0b', '#8b5cf6', '#ec4899'] }] }, options: opt });
+        
+        // Configuração da Barra: Cor Azul e Máximo 100
+        bar = new Chart(document.getElementById('c-bar'), { 
+            type: 'bar', 
+            data: { labels: ['PONTOS'], datasets: [{ data: [0], backgroundColor: '#3b82f6', borderRadius: 8 }] }, 
+            options: { ...opt, indexAxis: 'y', scales: { x: { min: 0, max: 100, ticks: { stepSize: 10 } } } } 
+        });
 
         renderList(); load(0);
     }
@@ -119,10 +119,10 @@
         const ins = document.getElementById('inputs'); ins.innerHTML = '';
         
         categorias.forEach((c, j) => {
-            const isResultField = j === 0;
+            const isTotal = j === 0;
             ins.innerHTML += `<div class="row">
-                <label>${c} ${!isResultField ? '(Max: 25)' : ''}</label>
-                <input type="number" id="inp-${j}" value="${g.v[j]}" ${isResultField ? 'disabled' : ''} oninput="upd(${j}, this.value)">
+                <label>${c}</label>
+                <input type="number" id="inp-${j}" value="${g.v[j]}" ${isTotal ? 'disabled' : ''} oninput="upd(${j}, this.value)">
             </div>`;
         });
         refresh(); renderList();
@@ -133,7 +133,7 @@
         if(val > pesosMax[j]) val = pesosMax[j];
         gestores[atual].v[j] = val; 
         
-        // SOMA AUTOMÁTICA: RESULTADOS = Soma dos outros 4
+        // Cálculo Automático do Total (Máximo 100)
         const soma = gestores[atual].v[1] + gestores[atual].v[2] + gestores[atual].v[3] + gestores[atual].v[4];
         gestores[atual].v[0] = soma;
         document.getElementById('inp-0').value = soma.toFixed(1);
@@ -146,15 +146,12 @@
         const total = v[0];
         const badge = document.getElementById('badge-14');
         
-        let color = total >= 100 ? "var(--success)" : (total >= 80 ? "var(--gold)" : "var(--danger)");
-        badge.style.backgroundColor = color;
-        badge.innerText = `RESULTADO FINAL: ${total.toFixed(1)} / 100`;
+        badge.style.backgroundColor = total >= 100 ? "var(--success)" : (total >= 80 ? "var(--gold)" : "var(--danger)");
+        badge.innerText = `TOTAL: ${total.toFixed(1)} / 100`;
 
         radar.data.datasets[0].data = v.slice(1); radar.update();
         pie.data.datasets[0].data = v.slice(1); pie.update();
-        bar.data.datasets[0].data = [total]; 
-        bar.data.datasets[0].backgroundColor = color;
-        bar.update();
+        bar.data.datasets[0].data = [total]; bar.update();
     }
 
     window.onload = () => setTimeout(init, 300);
