@@ -3,145 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SDA - Gestão de Performance Profissional</title>
+    <title>SDA - Gestão Profissional</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg: #0f172a; --primary: #3b82f6; --success: #22c55e; --warning: #f59e0b; --danger: #ef4444; }
+        :root { --bg: #0f172a; --primary: #3b82f6; --success: #22c55e; --danger: #ef4444; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background-color: #f8fafc; }
-        .wrapper { display: flex; width: 100vw; height: 100vh; }
+        body { background: #f1f5f9; height: 100vh; display: flex; overflow: hidden; }
 
         /* SIDEBAR */
-        .sidebar { width: 320px; background: var(--bg); color: white; padding: 15px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .list-area { flex-grow: 1; overflow-y: auto; margin-top: 10px; }
-        .item { padding: 12px; background: #1e293b; margin-bottom: 8px; border-radius: 8px; cursor: pointer; border-left: 4px solid transparent; transition: 0.2s; }
+        .sidebar { width: 300px; background: var(--bg); color: white; padding: 15px; display: flex; flex-direction: column; }
+        .item { padding: 12px; background: #1e293b; margin-bottom: 8px; border-radius: 8px; cursor: pointer; border-left: 4px solid transparent; font-size: 13px; }
         .item.active { background: var(--primary); border-left-color: white; }
-        .item:hover:not(.active) { background: #334155; }
-
+        
         /* EDITOR */
-        .editor { background: #1e293b; padding: 15px; border-radius: 10px; margin-top: 10px; }
-        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .row label { font-size: 11px; color: #94a3b8; }
-        .row input { width: 60px; text-align: center; border-radius: 4px; border: none; padding: 4px; font-weight: bold; }
+        .editor { background: #1e293b; padding: 12px; border-radius: 8px; margin-top: auto; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 6px; align-items: center; }
+        .row label { font-size: 10px; color: #94a3b8; }
+        .row input { width: 50px; text-align: center; border-radius: 4px; border: none; padding: 2px; font-weight: bold; }
 
         /* MAIN */
-        .main { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
-        .header-dash { background: white; padding: 20px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        
-        .stats-grid { display: flex; gap: 15px; }
-        .stat-card { background: white; padding: 15px; border-radius: 12px; flex: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-top: 4px solid var(--primary); }
-        .stat-card small { color: #64748b; font-size: 11px; text-transform: uppercase; }
-        .stat-card h3 { font-size: 18px; margin-top: 5px; }
+        .main { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
+        .header { background: white; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .btn-comp { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
 
-        .charts-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex-grow: 1; }
-        .card-chart { background: white; border-radius: 15px; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        /* MODAL COMPARATIVO */
+        #modal-comp { 
+            display: none; position: fixed; top: 5%; left: 10%; width: 80%; height: 85%; 
+            background: white; z-index: 100; border-radius: 15px; box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            padding: 20px; flex-direction: column;
+        }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .selectors { display: flex; gap: 20px; margin-bottom: 20px; }
+        .selectors select { padding: 8px; border-radius: 6px; border: 1px solid #ddd; flex: 1; }
+
+        /* GRÁFICOS */
+        .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex: 1; }
+        .card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .full { grid-column: span 2; }
-        
-        .badge-class { padding: 5px 15px; border-radius: 20px; color: white; font-weight: bold; font-size: 12px; }
     </style>
 </head>
 <body>
 
-<div class="wrapper">
-    <div class="sidebar">
-        <h2 style="font-size: 16px; font-weight: 600;">Gestores Avaliados</h2>
-        <div class="list-area" id="list"></div>
-        
-        <div class="editor">
-            <h4 style="font-size: 11px; color: var(--primary); margin-bottom: 10px;">EDITAR MÉTRICAS (PESOS)</h4>
-            <div id="inputs-area"></div>
-        </div>
+<div class="sidebar">
+    <h3 style="font-size: 14px; margin-bottom: 15px;">GESTORES</h3>
+    <div id="list" style="flex:1; overflow-y:auto"></div>
+    <div class="editor">
+        <h4 style="font-size: 10px; color: var(--primary); margin-bottom: 8px;">EDITAR NOTAS</h4>
+        <div id="inputs"></div>
+    </div>
+</div>
+
+<div class="main">
+    <div class="header">
+        <div><h1 id="h-name">Nome</h1><p id="h-role">Cargo</p></div>
+        <button class="btn-comp" onclick="toggleModal(true)">📊 Comparar Gestores</button>
+        <div id="avg-badge" style="padding:15px; border-radius:12px; color:white; font-size:24px; font-weight:bold">0</div>
     </div>
 
-    <div class="main">
-        <div class="header-dash">
-            <div>
-                <h1 id="h-name">Nome</h1>
-                <p id="h-role" style="color: #64748b;">Cargo</p>
-            </div>
-            <div style="text-align: right;">
-                <span id="h-class" class="badge-class">Excelente</span>
-                <h2 id="h-total" style="font-size: 32px; color: var(--bg);">100</h2>
-            </div>
+    <div class="charts">
+        <div class="card"><h4>Radar de Competências</h4><canvas id="c-radar"></canvas></div>
+        <div class="card"><h4>Pontuação por Categoria</h4><canvas id="c-bar"></canvas></div>
+        <div class="card full" style="height: 150px;">
+            <h4 style="margin-bottom: 10px;">Feedback do Gestor</h4>
+            <textarea id="feedback" style="width:100%; height:80px; border:1px solid #ddd; border-radius:8px; padding:10px;" oninput="updFeedback(this.value)"></textarea>
         </div>
+    </div>
+</div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <small>Maior Impacto</small>
-                <h3 id="p-forte">Resultados</h3>
-            </div>
-            <div class="stat-card">
-                <small>Gratificação (40%)</small>
-                <h3 id="p-bonus">Elegível</h3>
-            </div>
-            <div class="stat-card">
-                <small>Pontuação vs Meta</small>
-                <h3 id="p-meta">100%</h3>
-            </div>
-        </div>
-
-        <div class="charts-container">
-            <div class="card-chart">
-                <h4>Equilíbrio de Atuação</h4>
-                <div style="flex-grow:1"><canvas id="c-radar"></canvas></div>
-            </div>
-            <div class="card-chart">
-                <h4>Distribuição de Pontos</h4>
-                <div style="flex-grow:1"><canvas id="c-pie"></canvas></div>
-            </div>
-            <div class="card-chart full">
-                <h4>Performance por Categoria (Max 100 pts)</h4>
-                <div style="flex-grow:1"><canvas id="c-bar"></canvas></div>
-            </div>
+<div id="modal-comp">
+    <div class="modal-header">
+        <h2>Comparativo Lado a Lado</h2>
+        <button onclick="toggleModal(false)" style="background:var(--danger); color:white; border:none; padding:5px 15px; border-radius:5px; cursor:pointer">Fechar</button>
+    </div>
+    <div class="selectors">
+        <select id="selA" onchange="updComp()"><option value="">Selecionar Gestor A</option></select>
+        <select id="selB" onchange="updComp()"><option value="">Selecionar Gestor B</option></select>
+    </div>
+    <div style="flex:1; display:flex; gap:20px;">
+        <div style="flex:1"><canvas id="c-comp-radar"></canvas></div>
+        <div style="flex:1; background:#f8fafc; padding:15px; border-radius:12px; overflow-y:auto;">
+            <table id="comp-table" style="width:100%; border-collapse:collapse; font-size:13px;">
+                </table>
         </div>
     </div>
 </div>
 
 <script>
     const categorias = ['Resultados', 'Gestão Pessoas', 'Comprometimento', 'Contribuição', 'Cultura'];
-    const pesosMax = [40, 25, 15, 10, 10]; // Pesos da sua tabela
+    const pesos = [40, 25, 15, 10, 10]; // Dados da sua tabela
     let atual = 0;
 
     const gestores = [
-        { n: 'Fabio Henrique Bethiol', r: 'GERENTE FINANCEIRO', v: [40, 25, 15, 10, 10] },
-        { n: 'Iolanda Rocha Volpe', r: 'COORD DP & RH', v: [40, 20, 10, 10, 5] },
-        { n: 'João Aparecido Santos', r: 'GERENTE SEGURANÇA', v: [35, 22, 12, 8, 9] },
-        { n: 'Ricardo Cecconi Jr', r: 'GERENTE GERAL', v: [40, 25, 15, 10, 10] },
-        { n: 'Rodrigo Donizete Costa', r: 'GERENTE ENGENHARIA', v: [5, 7, 5, 5, 7] }
+        { n: 'Fabio Henrique Bethiol', r: 'GERENTE FINANCEIRO', v: [40, 25, 15, 10, 10], f: "" },
+        { n: 'Iolanda Rocha Volpe', r: 'COORD DP & RH', v: [40, 20, 10, 10, 5], f: "" },
+        { n: 'João Aparecido Santos', r: 'GERENTE SEGURANÇA', v: [35, 22, 12, 8, 9], f: "" },
+        { n: 'Ricardo Cecconi Jr', r: 'GERENTE GERAL', v: [40, 25, 15, 10, 10], f: "" },
+        { n: 'Rodrigo Donizete Costa', r: 'GERENTE ENGENHARIA', v: [5, 7, 5, 5, 7], f: "" }
     ];
 
-    let radar, pie, bar;
+    let radar, bar, compRadar;
 
     function init() {
-        const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } };
-
-        radar = new Chart(document.getElementById('c-radar'), {
-            type: 'radar',
-            data: { labels: categorias, datasets: [{ data: [], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', borderWidth: 2 }] },
-            options: { ...opt, plugins: { legend: { display: false } } }
+        const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+        
+        radar = new Chart(document.getElementById('c-radar'), { type: 'radar', data: { labels: categorias, datasets: [{ data: [], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', borderWidth: 2 }] }, options: opt });
+        bar = new Chart(document.getElementById('c-bar'), { type: 'bar', data: { labels: categorias, datasets: [{ data: [], backgroundColor: '#3b82f6' }] }, options: { ...opt, indexAxis: 'y' } });
+        
+        compRadar = new Chart(document.getElementById('c-comp-radar'), { 
+            type: 'radar', 
+            data: { labels: categorias, datasets: [
+                { label: 'Gestor A', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)' },
+                { label: 'Gestor B', data: [], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)' }
+            ]},
+            options: { ...opt, plugins: { legend: { display: true } } }
         });
 
-        pie = new Chart(document.getElementById('c-pie'), {
-            type: 'doughnut',
-            data: { labels: categorias, datasets: [{ data: [], backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'] }] },
-            options: opt
+        const selA = document.getElementById('selA');
+        const selB = document.getElementById('selB');
+        gestores.forEach((g, i) => {
+            const optA = new Option(g.n, i);
+            const optB = new Option(g.n, i);
+            selA.add(optA);
+            selB.add(optB);
         });
 
-        bar = new Chart(document.getElementById('c-bar'), {
-            type: 'bar',
-            data: { labels: categorias, datasets: [{ data: [], backgroundColor: '#3b82f6', borderRadius: 8 }] },
-            options: { ...opt, indexAxis: 'y', scales: { x: { max: 40 } } }
-        });
-
-        renderList();
+        render();
         load(0);
     }
 
-    function renderList() {
-        const list = document.getElementById('list');
-        list.innerHTML = '';
+    function render() {
+        const l = document.getElementById('list');
+        l.innerHTML = '';
         gestores.forEach((g, i) => {
-            list.innerHTML += `<div class="item ${i === atual ? 'active' : ''}" onclick="load(${i})">${g.n}</div>`;
+            const d = document.createElement('div');
+            d.className = `item ${i === atual ? 'active' : ''}`;
+            d.innerHTML = `${g.n}`;
+            d.onclick = () => load(i);
+            l.appendChild(d);
         });
     }
 
@@ -150,45 +148,61 @@
         const g = gestores[i];
         document.getElementById('h-name').innerText = g.n;
         document.getElementById('h-role').innerText = g.r;
-
-        const inputs = document.getElementById('inputs-area');
-        inputs.innerHTML = '';
-        categorias.forEach((cat, j) => {
-            inputs.innerHTML += `
-                <div class="row">
-                    <label>${cat} (max ${pesosMax[j]})</label>
-                    <input type="number" value="${g.v[j]}" max="${pesosMax[j]}" oninput="upd(${j}, this.value)">
-                </div>`;
+        document.getElementById('feedback').value = g.f;
+        
+        const ins = document.getElementById('inputs');
+        ins.innerHTML = '';
+        categorias.forEach((c, j) => {
+            ins.innerHTML += `<div class="row"><label>${c}</label><input type="number" value="${g.v[j]}" max="${pesos[j]}" oninput="upd(${j}, this.value)"></div>`;
         });
         refresh();
-        renderList();
+        render();
     }
 
-    function upd(j, val) {
-        gestores[atual].v[j] = parseFloat(val) || 0;
-        refresh();
-    }
+    function upd(j, v) { gestores[atual].v[j] = parseFloat(v) || 0; refresh(); }
+    function updFeedback(v) { gestores[atual].f = v; }
 
     function refresh() {
         const v = gestores[atual].v;
         const total = v.reduce((a, b) => a + b, 0);
+        const b = document.getElementById('avg-badge');
+        b.innerText = total;
+        b.style.backgroundColor = total >= 90 ? '#22c55e' : (total >= 60 ? '#f59e0b' : '#ef4444');
         
-        document.getElementById('h-total').innerText = total;
-        
-        const badge = document.getElementById('h-class');
-        if (total >= 90) { badge.innerText = "EXCELENTE"; badge.style.backgroundColor = "#22c55e"; }
-        else if (total >= 60) { badge.innerText = "REGULAR"; badge.style.backgroundColor = "#f59e0b"; }
-        else { badge.innerText = "INSATISFATÓRIO"; badge.style.backgroundColor = "#ef4444"; }
-
-        document.getElementById('p-bonus').innerText = total >= 90 ? "ELEGÍVEL (40%)" : "NÃO ELEGÍVEL";
-        document.getElementById('p-meta').innerText = total + "%";
-
-        radar.data.datasets[0].data = v; radar.update();
-        pie.data.datasets[0].data = v; pie.update();
-        bar.data.datasets[0].data = v; bar.update();
+        radar.data.datasets[0].data = v; radar.update('none');
+        bar.data.datasets[0].data = v; bar.update('none');
     }
 
-    window.onload = init;
+    function toggleModal(show) {
+        document.getElementById('modal-comp').style.display = show ? 'flex' : 'none';
+    }
+
+    function updComp() {
+        const iA = document.getElementById('selA').value;
+        const iB = document.getElementById('selB').value;
+        const table = document.getElementById('comp-table');
+        
+        table.innerHTML = '<tr><th style="text-align:left">Categoria</th><th>A</th><th>B</th><th>Diff</th></tr>';
+        
+        if(iA !== "" && iB !== "") {
+            const vA = gestores[iA].v;
+            const vB = gestores[iB].v;
+            compRadar.data.datasets[0].data = vA;
+            compRadar.data.datasets[1].data = vB;
+            compRadar.update();
+
+            categorias.forEach((c, j) => {
+                const diff = vA[j] - vB[j];
+                const color = diff > 0 ? '#22c55e' : (diff < 0 ? '#ef4444' : '#64748b');
+                table.innerHTML += `<tr><td>${c}</td><td>${vA[j]}</td><td>${vB[j]}</td><td style="color:${color}; font-weight:bold">${diff > 0 ? '+'+diff : diff}</td></tr>`;
+            });
+            const totA = vA.reduce((a,b)=>a+b,0);
+            const totB = vB.reduce((a,b)=>a+b,0);
+            table.innerHTML += `<tr style="border-top:2px solid #ddd; font-weight:bold"><td>TOTAL</td><td>${totA}</td><td>${totB}</td><td>${totA-totB}</td></tr>`;
+        }
+    }
+
+    window.onload = () => setTimeout(init, 500);
 </script>
 </body>
 </html>
