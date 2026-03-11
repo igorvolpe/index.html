@@ -18,49 +18,57 @@
         body, html { width: 100%; height: 100vh; overflow: hidden; background: #f8fafc; }
         .wrapper { display: flex; width: 100%; height: 100vh; }
 
+        /* SIDEBAR */
         .sidebar { width: 300px; background: var(--bg-sidebar); color: white; padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
         .list-area { flex-grow: 1; overflow-y: auto; margin: 15px 0; }
         .item { padding: 12px; background: rgba(255,255,255,0.05); margin-bottom: 8px; border-radius: 8px; cursor: pointer; font-size: 11px; border-left: 4px solid transparent; }
         .item.active { background: var(--primary); border-left-color: white; font-weight: bold; }
-
+        
+        /* EDITOR COM NOVA LÓGICA DE CÁLCULO DE 100 PONTOS */
         .editor { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1); }
         .row { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; }
         .row label { font-size: 9px; color: #cbd5e1; text-transform: uppercase; }
         .row input { width: 60px; text-align: center; border-radius: 6px; border: none; padding: 6px; font-weight: bold; background: #334155; color: white; }
-        .row input:disabled { background: var(--accent); color: white; border: 1px solid white; cursor: not-allowed; }
+        /* CAMPO DE RESULTADO TRAVADO (disabled) */
+        .row input:disabled { background: var(--accent); color: white; border: 1px solid white; cursor: not-allowed; opacity: 1; }
 
-        .main { flex: 1; display: flex; flex-direction: column; padding: 20px; gap: 20px; }
+        /* MAIN CONTENT */
+        .main { flex: 1; display: flex; flex-direction: column; padding: 20px; gap: 20px; height: 100vh; }
         .header { height: 80px; background: white; padding: 0 30px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         
-        .grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 0.8fr; gap: 20px; flex-grow: 1; }
-        .card { background: white; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; border: 1px solid #f1f5f9; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: calc(45vh - 70px) calc(35vh - 70px); gap: 20px; flex-grow: 1; min-height: 0; }
+        .card { background: white; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; min-height: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; }
+        .card h4 { font-size: 11px; color: #94a3b8; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px; }
         .full { grid-column: span 2; }
-        .chart-box { position: relative; flex-grow: 1; min-height: 0; }
-        .badge-14 { padding: 12px 24px; border-radius: 12px; color: white; font-weight: bold; min-width: 180px; text-align: center; }
+        .chart-box { position: relative; flex-grow: 1; width: 100%; height: 100%; min-height: 0; }
+
+        .btn-comp { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 13px; }
+        .badge-14 { padding: 12px 24px; border-radius: 12px; color: white; font-weight: 800; text-align: center; min-width: 180px; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="wrapper">
     <div class="sidebar">
-        <h2 style="font-size: 14px; margin-bottom: 15px;">PAINEL GESTORES</h2>
+        <h2 style="font-size: 14px; margin-bottom: 15px;">PAINEL SDA</h2>
         <div id="list" class="list-area"></div>
         <div class="editor">
-            <h4 style="color: #60a5fa; margin-bottom: 12px; font-size: 10px; font-weight: 800;">NOTAS TÉCNICAS (MAX 100)</h4>
+            <h4 style="color: #60a5fa; margin-bottom: 12px; font-size: 10px; font-weight: 800;">NOTAS TÉCNICAS (TOTAL 100)</h4>
             <div id="inputs"></div>
         </div>
     </div>
 
     <div class="main">
         <div class="header">
-            <div><h2 id="h-name">Selecione um Gestor</h2><p id="h-role">Cargo</p></div>
-            <div id="badge-14" class="badge-14">Nota: 0 / 100</div>
+            <div><h2 id="h-name" style="font-size: 20px;">Selecionar Gestor</h2><p id="h-role" style="font-size: 12px; color: #64748b;">Aguardando seleção</p></div>
+            <div id="badge-14" class="badge-14">Carregando Notas...</div>
+            <button class="btn-comp" onclick="openComp()">📊 COMPARATIVO</button>
         </div>
 
         <div class="grid">
             <div class="card"><h4>Equilíbrio de Competências</h4><div class="chart-box"><canvas id="c-radar"></canvas></div></div>
-            <div class="card"><h4>Distribuição Percentual</h4><div class="chart-box"><canvas id="c-pie"></canvas></div></div>
-            <div class="card full"><h4>Progresso para o 14º Salário (Meta: 100 Pontos)</h4><div class="chart-box"><canvas id="c-bar"></canvas></div></div>
+            <div class="card"><h4>Distribuição de Notas</h4><div class="chart-box"><canvas id="c-pie"></canvas></div></div>
+            <div class="card full"><h4>Régua para o Bônus Anual (Meta: 100 pts)</h4><div class="chart-box"><canvas id="c-bar"></canvas></div></div>
         </div>
     </div>
 </div>
@@ -68,23 +76,56 @@
 <script>
     const categorias = ['RESULTADOS (TOTAL)', 'Gestão Pessoas', 'Comprometimento', 'Contribuição', 'Cultura'];
     
-    // Ajustado para que a soma dos 4 campos abaixo dê 100
+    // NOVA REDISTRIBUIÇÃO DE PESOS PARA SOMAR 100
+    // Soma: 40 + 25 + 20 + 15 = 100. O primeiro índice é o total automatizado.
     const pesosMax = [100, 40, 25, 20, 15]; 
     
     let atual = 0;
     const gestores = [
         { n: 'Fabio Henrique Bethiol', r: 'GERENTE FINANCEIRO', v: [100, 40, 25, 20, 15] },
         { n: 'Iolanda Rocha Volpe', r: 'COORD DP & RH', v: [80, 35, 20, 15, 10] },
-        { n: 'Ricardo Cecconi Jr', r: 'GERENTE GERAL', v: [100, 40, 25, 20, 15] }
+        { n: 'João Aparecido Santos', r: 'GERENTE SEGURANÇA', v: [91, 38, 22, 18, 13] },
+        { n: 'Ricardo Cecconi Jr', r: 'GERENTE GERAL', v: [100, 40, 25, 20, 15] },
+        { n: 'Rodrigo Donizete Costa', r: 'GERENTE ENGENHARIA', v: [26, 7, 5, 5, 7] }
     ];
 
     let radar, pie, bar;
 
     function init() {
-        const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
-        radar = new Chart(document.getElementById('c-radar'), { type: 'radar', data: { labels: categorias, datasets: [{ data: [], backgroundColor: 'rgba(99, 102, 241, 0.2)', borderColor: '#6366f1' }] }, options: opt });
-        pie = new Chart(document.getElementById('c-pie'), { type: 'doughnut', data: { labels: categorias.slice(1), datasets: [{ data: [], backgroundColor: ['#10b981', '#f59e0b', '#8b5cf6', '#ec4899'] }] }, options: { ...opt, plugins: { legend: { display: true, position: 'bottom' } } } });
-        bar = new Chart(document.getElementById('c-bar'), { type: 'bar', data: { labels: ['SOMA TOTAL'], datasets: [{ data: [0], borderRadius: 10 }] }, options: { ...opt, indexAxis: 'y', scales: { x: { min: 0, max: 100 } } } });
+        // Opções Universais para travar o tamanho e calibrar para 100
+        const universalOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                r: { // Para o radar
+                    min: 0, max: 100,
+                    ticks: { display: false }
+                }
+            }
+        };
+        
+        radar = new Chart(document.getElementById('c-radar'), { type: 'radar', data: { labels: categorias, datasets: [{ data: [], backgroundColor: 'rgba(99, 102, 241, 0.15)', borderColor: '#6366f1', borderWidth: 2 }] }, options: universalOptions });
+        pie = new Chart(document.getElementById('c-pie'), { type: 'doughnut', data: { labels: categorias.slice(1), datasets: [{ data: [], backgroundColor: ['#10b981', '#f59e0b', '#8b5cf6', '#ec4899'] }] }, options: { ...universalOptions, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }, scales: {} } });
+        
+        // GRÁFICO DE BARRA COM ESCALA DE 100 E MARCAÇÕES DE 10 EM 10
+        bar = new Chart(document.getElementById('c-bar'), { 
+            type: 'bar', 
+            data: { labels: ['SOMA TOTAL DE PONTOS'], datasets: [{ data: [0], backgroundColor: '#3b82f6', borderRadius: 8 }] }, 
+            options: { 
+                ...universalOptions, 
+                indexAxis: 'y', 
+                scales: { 
+                    x: { 
+                        min: 0, 
+                        max: 100, 
+                        ticks: { stepSize: 10, font: { weight: 'bold' } }, // Marcações de 10 em 10
+                        grid: { color: '#e2e8f0' }
+                    } 
+                } 
+            } 
+        });
 
         renderList(); load(0);
     }
@@ -92,8 +133,10 @@
     function renderList() {
         const list = document.getElementById('list'); list.innerHTML = '';
         gestores.forEach((g, i) => {
-            const d = document.createElement('div'); d.className = `item ${i === atual ? 'active' : ''}`;
-            d.innerHTML = g.n; d.onclick = () => load(i); list.appendChild(d);
+            const d = document.createElement('div');
+            d.className = `item ${i === atual ? 'active' : ''}`;
+            d.innerHTML = g.n; d.onclick = () => load(i);
+            list.appendChild(d);
         });
     }
 
@@ -104,45 +147,5 @@
         const ins = document.getElementById('inputs'); ins.innerHTML = '';
         
         categorias.forEach((c, j) => {
-            const isTotal = j === 0;
-            ins.innerHTML += `<div class="row">
-                <label>${c} (Max: ${pesosMax[j]})</label>
-                <input type="number" id="inp-${j}" value="${g.v[j]}" ${isTotal ? 'disabled' : ''} oninput="upd(${j}, this.value)">
-            </div>`;
-        });
-        refresh(); renderList();
-    }
-
-    function upd(j, v) { 
-        let val = parseFloat(v) || 0;
-        if(val > pesosMax[j]) val = pesosMax[j];
-        gestores[atual].v[j] = val; 
-        
-        // SOMA AUTOMÁTICA PARA 100 PONTOS
-        const soma = gestores[atual].v[1] + gestores[atual].v[2] + gestores[atual].v[3] + gestores[atual].v[4];
-        gestores[atual].v[0] = soma;
-        document.getElementById('inp-0').value = soma.toFixed(1);
-        
-        refresh(); 
-    }
-
-    function refresh() {
-        const v = gestores[atual].v; 
-        const total = v[0];
-        const badge = document.getElementById('badge-14');
-        
-        let color = total >= 100 ? "var(--success)" : (total >= 80 ? "var(--gold)" : "var(--danger)");
-        badge.style.backgroundColor = color;
-        badge.innerText = `NOTA FINAL: ${total.toFixed(1)} / 100`;
-
-        radar.data.datasets[0].data = v; radar.update();
-        pie.data.datasets[0].data = v.slice(1); pie.update();
-        bar.data.datasets[0].data = [total]; 
-        bar.data.datasets[0].backgroundColor = color; 
-        bar.update();
-    }
-
-    window.onload = () => init();
-</script>
-</body>
-</html>
+            const isTotalField = j === 0; // Se j for o primeiro índice (RESULTADOS)
+            ins.
