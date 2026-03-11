@@ -3,73 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard RH - Inteligente</title>
+    <title>Dash RH - Performance 2025</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        html, body { width: 100%; height: 100%; overflow: hidden; background-color: #0f172a; color: #f8fafc; }
+        /* CSS PARA RESOLUÇÃO 100% SEM ROLAGEM */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background-color: #0f172a; }
 
-        .app { display: flex; width: 100vw; height: 100vh; }
+        .container { display: flex; width: 100vw; height: 100vh; }
 
-        /* SIDEBAR */
-        .sidebar { width: 280px; background: #1e293b; display: flex; flex-direction: column; padding: 15px; border-right: 1px solid #334155; }
-        .sidebar h2 { font-size: 12px; text-transform: uppercase; color: #94a3b8; margin-bottom: 10px; }
-        .search-box { padding: 10px; border-radius: 6px; border: none; background: #334155; color: white; margin-bottom: 15px; width: 100%; outline: none; border: 1px solid transparent; }
-        .search-box:focus { border-color: #3b82f6; }
+        /* BARRA LATERAL */
+        .sidebar { 
+            width: 300px; background: #1e293b; color: white; 
+            display: flex; flex-direction: column; padding: 15px; border-right: 1px solid #334155; 
+        }
+        .sidebar h2 { font-size: 12px; color: #94a3b8; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .search-box { 
+            padding: 10px; border-radius: 6px; border: 1px solid #475569; 
+            background: #0f172a; color: white; margin-bottom: 15px; width: 100%; font-size: 13px;
+        }
 
-        .emp-list { flex-grow: 1; overflow-y: auto; }
-        .emp-card { padding: 10px; border-radius: 6px; cursor: pointer; margin-bottom: 5px; transition: 0.2s; border: 1px solid transparent; }
-        .emp-card:hover { background: #334155; }
-        .emp-card.active { background: #3b82f6; color: white; }
-        .emp-card strong { display: block; font-size: 13px; }
-        .emp-card span { font-size: 10px; color: #cbd5e1; }
-        .emp-card.active span { color: #dbeafe; }
+        .employee-list { flex-grow: 1; overflow-y: auto; scrollbar-width: thin; }
+        .employee-card { 
+            padding: 12px; border-radius: 8px; cursor: pointer; margin-bottom: 8px; 
+            background: #334155; border: 1px solid transparent; transition: 0.3s;
+        }
+        .employee-card:hover { border-color: #3b82f6; }
+        .employee-card.active { background: #3b82f6; }
+        .employee-card strong { display: block; font-size: 13px; margin-bottom: 2px; }
+        .employee-card span { font-size: 10px; color: #cbd5e1; }
 
-        /* MAIN DASHBOARD */
-        .main { flex-grow: 1; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #f1f5f9; color: #1e293b; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-        .header h1 { font-size: 18px; }
+        /* PAINEL PRINCIPAL */
+        .main { flex-grow: 1; display: flex; flex-direction: column; padding: 15px; background: #f1f5f9; gap: 10px; }
+        
+        .header { 
+            background: white; padding: 12px 20px; border-radius: 10px; 
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .header h1 { font-size: 18px; color: #1e293b; }
+        .header .job-title { font-size: 12px; color: #64748b; font-weight: 600; }
 
-        /* GRID DE GRÁFICOS - 3 ESPAÇOS */
-        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; flex-grow: 1; min-height: 0; }
-        .chart-box { background: white; border-radius: 10px; padding: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
-        .chart-box.full-width { grid-column: span 2; } /* O gráfico de competências fica largo embaixo */
-        .chart-box h3 { font-size: 12px; color: #64748b; margin-bottom: 8px; text-transform: uppercase; }
+        /* GRID DE GRÁFICOS */
+        .charts-grid { 
+            display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1.2fr; 
+            gap: 10px; flex-grow: 1; min-height: 0; 
+        }
+        .chart-item { 
+            background: white; border-radius: 10px; padding: 15px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column;
+        }
+        .chart-item.full { grid-column: span 2; }
+        .chart-item h3 { font-size: 12px; color: #475569; margin-bottom: 10px; text-transform: uppercase; }
         
         .canvas-container { flex-grow: 1; position: relative; min-height: 0; }
     </style>
 </head>
 <body>
 
-<div class="app">
+<div class="container">
     <div class="sidebar">
-        <h2>Pesquisar Gestor</h2>
-        <input type="text" id="search" class="search-box" placeholder="Nome ou cargo..." onkeyup="filterList()">
-        <div class="emp-list" id="empList"></div>
+        <h2>Gestores Avaliados</h2>
+        <input type="text" id="searchInput" class="search-box" placeholder="Pesquisar nome ou cargo..." onkeyup="filterEmployees()">
+        <div class="employee-list" id="list"></div>
     </div>
 
     <div class="main">
         <div class="header">
             <div>
-                <h1 id="selectedName">Selecione um Funcionário</h1>
-                <p id="selectedRole" style="font-size: 12px; color: #64748b;">Aguardando seleção...</p>
+                <h1 id="displayName">Selecione um Gestor</h1>
+                <div id="displayRole" class="job-title">---</div>
             </div>
-            <div style="text-align: right; font-size: 11px; font-weight: bold;">RH DESEMPENHO 2025</div>
+            <div style="text-align: right; color: #3b82f6; font-weight: bold; font-size: 12px;">RH PERFORMANCE 2025</div>
         </div>
 
         <div class="charts-grid">
-            <div class="chart-box">
-                <h3>Equilíbrio de Competências</h3>
+            <div class="chart-item">
+                <h3>Equilíbrio de Competências (Radar)</h3>
                 <div class="canvas-container"><canvas id="radarChart"></canvas></div>
             </div>
-
-            <div class="chart-box">
-                <h3>Nota Final vs Meta</h3>
+            <div class="chart-item">
+                <h3>Média Geral vs Meta</h3>
                 <div class="canvas-container"><canvas id="barMetaChart"></canvas></div>
             </div>
-
-            <div class="chart-box full-width">
-                <h3>Detalhamento por Competência (Avaliação 2025)</h3>
+            <div class="chart-item full">
+                <h3>Detalhamento de Avaliação (Individual)</h3>
                 <div class="canvas-container"><canvas id="detailChart"></canvas></div>
             </div>
         </div>
@@ -77,84 +96,83 @@
 </div>
 
 <script>
-    // DADOS REAIS CONFORME SOLICITADO
-    const data = [
-        { nome: 'Fabio Henrique Bethiol', cargo: 'GERENTE A.FINANCEIRO', notas: [8.5, 9, 7.5, 8.8, 9.2], final: 8.6 },
-        { nome: 'Iolanda Rocha Volpe', cargo: 'COORD DP & RH', notas: [9.5, 8.5, 9.2, 9.8, 9.0], final: 9.2 },
-        { nome: 'João Aparecido Santos', cargo: 'GERENTE SEGURANÇA', notas: [7.8, 8.2, 8.5, 7.0, 8.0], final: 7.9 },
-        { nome: 'Ricardo Cecconi Jr', cargo: 'GERENTE GERAL', notas: [9.0, 9.2, 9.5, 9.0, 9.8], final: 9.3 },
-        { nome: 'Rodrigo Donizete Costa', cargo: 'GERENTE MANUT & ENGENHARIA', notas: [8.2, 7.8, 8.0, 8.5, 7.5], final: 8.0 }
+    // 1. DADOS DOS GESTORES (Nomes e cargos solicitados)
+    const employees = [
+        { n: 'Fabio Henrique Bethiol', c: 'GERENTE A.FINANCEIRO', notes: [8.5, 9.2, 7.8, 8.0, 9.5], avg: 8.6 },
+        { n: 'Iolanda Rocha Volpe', c: 'COORD DP & RH', notes: [9.8, 8.5, 9.5, 9.0, 9.2], avg: 9.2 },
+        { n: 'João Aparecido Santos', c: 'GERENTE SEGURANÇA', notes: [7.5, 8.0, 8.2, 7.8, 8.5], avg: 8.0 },
+        { n: 'Ricardo Cecconi Jr', c: 'GERENTE GERAL', notes: [9.2, 9.5, 9.8, 9.4, 9.0], avg: 9.4 },
+        { n: 'Rodrigo Donizete Costa', c: 'GERENTE MANUT & ENGENHARIA', notes: [8.0, 7.5, 8.8, 8.2, 7.9], avg: 8.1 }
     ];
 
-    const labelsComp = ['Comunicação', 'Proatividade', 'Liderança', 'Equipe', 'Resultados'];
+    const labels = ['Comunicação', 'Proatividade', 'Liderança', 'Equipe', 'Resultados'];
     let radar, barMeta, detail;
 
-    function initCharts() {
-        const commonOpt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+    // 2. INICIALIZAR GRÁFICOS
+    function init() {
+        const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
 
         radar = new Chart(document.getElementById('radarChart'), {
             type: 'radar',
-            data: { labels: labelsComp, datasets: [{ data: [0,0,0,0,0], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6' }] },
-            options: commonOpt
+            data: { labels: labels, datasets: [{ data: [0,0,0,0,0], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', borderWidth: 2 }] },
+            options: opt
         });
 
         barMeta = new Chart(document.getElementById('barMetaChart'), {
             type: 'bar',
-            data: { labels: ['Nota Final', 'Meta'], datasets: [{ data: [0, 9], backgroundColor: ['#3b82f6', '#e2e8f0'] }] },
-            options: commonOpt
+            data: { labels: ['Nota Atual', 'Meta'], datasets: [{ data: [0, 9], backgroundColor: ['#3b82f6', '#e2e8f0'] }] },
+            options: opt
         });
 
         detail = new Chart(document.getElementById('detailChart'), {
             type: 'bar',
-            data: { 
-                labels: labelsComp, 
-                datasets: [{ data: [0,0,0,0,0], backgroundColor: '#10b981', borderRadius: 5 }] 
-            },
-            options: { ...commonOpt, indexAxis: 'y' } // Barras horizontais como na foto
+            data: { labels: labels, datasets: [{ data: [0,0,0,0,0], backgroundColor: '#10b981' }] },
+            options: { ...opt, indexAxis: 'y' } // Barras horizontais conforme a foto
+        });
+
+        renderList(employees);
+        updateDash(0);
+    }
+
+    // 3. FUNÇÃO DE FILTRO E ATUALIZAÇÃO
+    function renderList(items) {
+        const listDiv = document.getElementById('list');
+        listDiv.innerHTML = '';
+        items.forEach((emp) => {
+            const card = document.createElement('div');
+            card.className = 'employee-card';
+            card.onclick = () => {
+                const realIdx = employees.findIndex(e => e.n === emp.n);
+                updateDash(realIdx);
+            };
+            card.innerHTML = `<strong>${emp.n}</strong><span>${emp.c}</span>`;
+            listDiv.appendChild(card);
         });
     }
 
-    function updateDash(index) {
-        const emp = data[index];
-        document.getElementById('selectedName').innerText = emp.nome;
-        document.getElementById('selectedRole').innerText = emp.cargo;
+    function filterEmployees() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = employees.filter(e => e.n.toLowerCase().includes(term) || e.c.toLowerCase().includes(term));
+        renderList(filtered);
+    }
 
-        // Atualizar Radar
-        radar.data.datasets[0].data = emp.notas;
-        radar.update();
+    function updateDash(idx) {
+        const emp = employees[idx];
+        document.getElementById('displayName').innerText = emp.n;
+        document.getElementById('displayRole').innerText = emp.c;
 
-        // Atualizar Barra Meta
-        barMeta.data.datasets[0].data = [emp.final, 9];
-        barMeta.update();
+        radar.data.datasets[0].data = emp.notes; radar.update();
+        barMeta.data.datasets[0].data = [emp.avg, 9]; barMeta.update();
+        detail.data.datasets[0].data = emp.notes; detail.update();
 
-        // Atualizar Detalhe (Gráfico da Foto)
-        detail.data.datasets[0].data = emp.notas;
-        detail.update();
-
-        // Marcar ativo na lista
-        document.querySelectorAll('.emp-card').forEach((c, i) => {
-            c.classList.toggle('active', i === index);
+        // Highlight ativo
+        document.querySelectorAll('.employee-card').forEach(card => {
+            card.classList.toggle('active', card.innerText.includes(emp.n));
         });
     }
 
-    function filterList() {
-        const term = document.getElementById('search').value.toLowerCase();
-        const list = document.getElementById('empList');
-        list.innerHTML = '';
-        data.forEach((emp, i) => {
-            if (emp.nome.toLowerCase().includes(term) || emp.cargo.toLowerCase().includes(term)) {
-                const card = document.createElement('div');
-                card.className = 'emp-card';
-                card.onclick = () => updateDash(i);
-                card.innerHTML = `<strong>${emp.nome}</strong><span>${emp.cargo}</span>`;
-                list.appendChild(card);
-            }
-        });
-    }
-
-    initCharts();
-    filterList();
-    updateDash(0); // Começa com o primeiro da lista
+    window.onload = init;
 </script>
+
 </body>
 </html>
