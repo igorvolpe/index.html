@@ -3,55 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SDA - Gestão Performance</title>
+    <title>SDA - Fix Final</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg: #0f172a; --primary: #3b82f6; --success: #22c55e; --danger: #ef4444; }
-        
-        /* IMPEDE QUALQUER ROLAGEM NA TELA INTEIRA */
+        :root { --bg: #0f172a; --primary: #3b82f6; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body, html { width: 100%; height: 100vh; overflow: hidden; background-color: #f1f5f9; }
+        
+        /* A TELA NÃO PODE TER ROLAGEM */
+        body, html { width: 100%; height: 100vh; overflow: hidden; background: #f1f5f9; }
         
         .wrapper { display: flex; width: 100%; height: 100vh; }
 
-        /* SIDEBAR FIXA */
-        .sidebar { width: 260px; background: var(--bg); color: white; padding: 15px; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; }
-        .list-area { flex-grow: 1; overflow-y: auto; margin: 10px 0; padding-right: 5px; }
-        .item { padding: 8px; background: #1e293b; margin-bottom: 5px; border-radius: 6px; cursor: pointer; font-size: 11px; transition: 0.2s; border-left: 3px solid transparent; }
-        .item.active { background: var(--primary); border-left-color: white; }
+        /* SIDEBAR */
+        .sidebar { width: 260px; background: var(--bg); color: white; padding: 15px; display: flex; flex-direction: column; flex-shrink: 0; }
+        .list-area { flex-grow: 1; overflow-y: auto; margin-bottom: 10px; }
+        .item { padding: 8px; background: #1e293b; margin-bottom: 5px; border-radius: 6px; cursor: pointer; font-size: 11px; }
+        .item.active { background: var(--primary); }
         
-        .editor { background: #1e293b; padding: 10px; border-radius: 8px; flex-shrink: 0; }
+        .editor { background: #1e293b; padding: 10px; border-radius: 8px; font-size: 10px; }
         .row { display: flex; justify-content: space-between; margin-bottom: 4px; align-items: center; }
-        .row label { font-size: 9px; color: #94a3b8; text-transform: uppercase; }
-        .row input { width: 40px; text-align: center; border-radius: 4px; border: none; padding: 2px; font-weight: bold; font-size: 11px; }
+        .row input { width: 45px; text-align: center; border-radius: 4px; border: none; padding: 2px; font-weight: bold; }
 
-        /* CONTEÚDO PRINCIPAL AJUSTADO */
-        .main { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 10px; height: 100vh; min-width: 0; }
+        /* ÁREA PRINCIPAL - AQUI ESTÁ A TRAVA */
+        .main { flex: 1; display: flex; flex-direction: column; padding: 15px; gap: 15px; height: 100vh; overflow: hidden; }
         
-        .header { height: 60px; background: white; padding: 0 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex-shrink: 0; }
-        .btn-comp { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .header { height: 60px; background: white; padding: 0 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-        /* GRID TRAVADO NA ALTURA DA TELA */
+        /* GRID RÍGIDO */
         .grid { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
-            grid-template-rows: calc(50vh - 55px) calc(50vh - 55px); /* Divide a tela em duas metades exatas descontando os espaços */
-            gap: 10px; 
-            flex: 1;
+            grid-template-rows: calc(45vh - 40px) calc(35vh - 40px); /* Alturas fixas baseadas na tela */
+            gap: 15px; 
+            flex-grow: 1;
         }
         
-        .card { background: white; border-radius: 10px; padding: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; min-height: 0; }
-        .card h4 { font-size: 10px; color: #64748b; text-transform: uppercase; margin-bottom: 5px; flex-shrink: 0; }
+        .card { background: white; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; overflow: hidden; }
+        .card h4 { font-size: 11px; color: #64748b; text-transform: uppercase; margin-bottom: 10px; flex-shrink: 0; }
         .full { grid-column: span 2; }
         
-        /* CONTAINER DO GRÁFICO PRECISA DE TAMANHO RELATIVO */
-        .chart-box { flex: 1; position: relative; width: 100%; height: 100%; min-height: 0; }
+        /* A CAIXA QUE TRAVA O GRÁFICO */
+        .chart-box { 
+            position: relative; 
+            flex-grow: 1; 
+            width: 100%; 
+            height: 100%; 
+            min-height: 0; /* Essencial para o Chrome/Firefox não esticar */
+        }
 
-        /* MODAL COMPARATIVO */
+        canvas { display: block !important; width: 100% !important; height: 100% !important; }
+
+        /* MODAL */
         #modal-comp { 
             display: none; position: fixed; inset: 20px; background: white; z-index: 100; 
-            border-radius: 15px; box-shadow: 0 0 40px rgba(0,0,0,0.3); padding: 20px; flex-direction: column; 
+            border-radius: 15px; box-shadow: 0 0 40px rgba(0,0,0,0.4); padding: 25px; flex-direction: column; 
         }
-        .comp-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1; min-height: 0; }
-        .winner-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; overflow-y: auto; }
-        .win-card { background: #f8fafc; padding: 10px; border-
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="sidebar">
+        <h3 style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">MENU GESTORES</h3>
+        <div id="list" class="list-area"></div>
+        <div class="editor">
+            <h4 style="color: var(--primary); margin-bottom: 8px;">NOTAS</h4>
+            <div id="inputs"></div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="header">
+            <div><h2 id="h-name">Nome</h2><p id="h-role" style="font-size: 12px; color: #64748b;">Cargo</p></div>
+            <button onclick="document.getElementById('modal-comp').style.display='flex'; updateComp();" style="background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">📊 Comparativo</button>
+            <div id="avg-badge" style="padding:10px 25px; border-radius:10px; color:white; font-size:24px; font-weight:bold">0</div>
+        </div>
+
+        <div class="grid">
+            <div class="card"><h4>Radar de Performance</h4><div class="chart-box"><canvas id="c-radar"></canvas></div></div>
+            <div class="card"><h4>Divisão por Categoria</h4><div class="chart-box"><canvas id="c-pie"></canvas></div></div>
+            <div class="card full"><h4>Análise de Pontos (Max 40)</h4><div class="chart-box"><canvas id="c-bar"></canvas></div></div>
+        </div>
+    </div>
+</div>
+
+<div id="modal-comp">
+    <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+        <h2>Comparativo Direto</h2>
+        <button onclick="document.getElementById('modal-comp').style.display='none'" style="background:#64748b; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer">Fechar</button>
+    </div>
+    <div style="display:flex; gap:15px; margin-bottom:15px;">
+        <select id="selA" onchange="updateComp()" style="flex:1; padding:10px; border-radius:8px;"></select>
+        <select id="selB" onchange="updateComp()" style="flex:1; padding:10px; border-radius:8px;"></select>
+    </div>
+    <div style="flex:1; display:flex; gap:20px; min-height:0;">
+        <div class="card" style="flex:1.5; border:1px solid #eee;"><div class="chart-box"><canvas id="c-comp-radar"></canvas></div></div>
+        <div id="winner-list" style="flex:1; overflow-y:auto; display:grid; gap:10px;"></div>
+    </div>
+</div>
+
+<script>
+    const labels = ['Resultados', 'Gestão Pessoas', 'Comprometimento', 'Contribuição', 'Cultura'];
+    const pesos = [40, 25, 15, 10, 10];
+    let current = 0;
+
+    const gestores = [
+        { n: 'Fabio Henrique Bethiol', r: 'GERENTE FINANCEIRO', v: [40, 25, 15, 10, 10] },
+        { n: 'Iolanda Rocha Volpe', r: 'COORD DP & RH', v: [40, 20, 10, 10, 5] },
+        { n: 'João Aparecido Santos', r: 'GERENTE SEGURANÇA', v: [35, 22, 12, 8, 9] },
+        { n: 'Ricardo Cecconi Jr', r: 'GERENTE GERAL', v: [40, 25, 15, 10, 10] },
+        { n: 'Rodrigo Donizete Costa', r: 'GERENTE ENGENHARIA', v: [5, 7, 5, 5, 7] }
+    ];
+
+    let radar, pie, bar, compRadar;
+
+    function init() {
+        // Opções Universais para travar o tamanho
+        const universalOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false, // Desligar animação ajuda a travar o tamanho mais rápido
+            plugins: { legend: { display: false } }
+        };
+        
+        radar = new Chart(document.getElementById('c-radar'), { type: 'radar', data: { labels: labels, datasets: [{ data: [], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', borderWidth: 2 }] }, options: universalOptions });
+        pie = new Chart(document.getElementById('c-pie'), { type: 'doughnut', data: { labels: labels, datasets: [{ data: [], backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'] }] }, options: { ...universalOptions, plugins: { legend: { display: true, position: 'bottom' } } } });
+        bar = new Chart(document.getElementById('c-bar'), { type: 'bar', data: { labels: labels, datasets: [{ data: [], backgroundColor: '#3b82f6' }] }, options: { ...universalOptions, indexAxis: 'y', scales: { x: { max: 40 } } } });
+        
+        compRadar = new Chart(document.getElementById('c-comp-radar'), { 
+            type: 'radar', 
+            data: { labels: labels, datasets: [
+                { label: 'A', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)' },
+                { label: 'B', data: [], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)' }
+            ]},
+            options: { ...universalOptions, plugins: { legend: { display: true } } }
+        });
+
+        const sA = document.getElementById('selA'); const sB = document.getElementById('selB');
+        gestores.forEach((g, i) => { sA.add(new Option(g.n, i)); sB.add(new Option(g.n, i)); });
+        sB.selectedIndex = 1;
+
+        render(); load(0);
+    }
+
+    function render() {
+        const list = document.getElementById('list'); list.innerHTML = '';
+        gestores.forEach((g, i) => {
+            const d = document.createElement('div');
+            d.className = `item ${i === current ? 'active' : ''}`;
+            d.innerHTML = g.n; d.onclick = () => load(i);
+            list.appendChild(d);
+        });
+    }
+
+    function load(i) {
+        current = i; const g = gestores[i];
+        document.getElementById('h-name').innerText = g.n;
+        document.getElementById('h-role').innerText = g.r;
+        const ins = document.getElementById('inputs'); ins.innerHTML = '';
+        labels.forEach((l, j) => { ins.innerHTML += `<div class="row"><label>${l}</label><input type="number" value="${g.v[j]}" oninput="upd(${j}, this.value)"></div>`; });
+        refresh(); render();
+    }
+
+    function upd(j, v) { gestores[current].v[j] = parseFloat(v) || 0; refresh(); }
+
+    function refresh() {
+        const v = gestores[current].v; const tot = v.reduce((a, b) => a + b, 0);
+        const b = document.getElementById('avg-badge'); b.innerText = tot;
+        b.style.backgroundColor = tot >= 90 ? '#22c55e' : (tot >= 60 ? '#f59e0b' : '#ef4444');
+        radar.data.datasets[0].data = v; radar.update();
+        pie.data.datasets[0].data = v; pie.update();
+        bar.data.datasets[0].data = v; bar.update();
+    }
+
+    function updateComp() {
+        const gA = gestores[document.getElementById('selA').value];
+        const gB = gestores[document.getElementById('selB').value];
+        const winList = document.getElementById('winner-list'); winList.innerHTML = '';
+        compRadar.data.datasets[0].label = gA.n; compRadar.data.datasets[0].data = gA.v;
+        compRadar.data.datasets[1].label = gB.n; compRadar.data.datasets[1].data = gB.v;
+        compRadar.update();
+        labels.forEach((l, j) => {
+            const winner = gA.v[j] > gB.v[j] ? gA.n : (gB.v[j] > gA.v[j] ? gB.n : 'Empate');
+            winList.innerHTML += `<div style="background:#f8fafc; padding:10px; border-radius:8px; border-left:4px solid #3b82f6; font-size:12px;"><b>${l}</b><br>Venceu: ${winner.split(' ')[0]}</div>`;
+        });
+    }
+
+    window.onload = () => setTimeout(init, 300);
+</script>
+</body>
+</html>
