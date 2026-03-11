@@ -3,87 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SDA - Meta 14º Salário</title>
+    <title>SDA - Gestão 100 Pontos</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg: #0f172a; --primary: #3b82f6; --gold: #f59e0b; --success: #22c55e; --danger: #ef4444; }
+        :root { --bg: #0f172a; --primary: #3b82f6; --success: #22c55e; --gold: #f59e0b; --danger: #ef4444; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body, html { width: 100%; height: 100vh; overflow: hidden; background: #f1f5f9; }
         .wrapper { display: flex; width: 100%; height: 100vh; }
 
         /* SIDEBAR */
         .sidebar { width: 260px; background: var(--bg); color: white; padding: 15px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .item { padding: 10px; background: #1e293b; margin-bottom: 5px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: 0.2s; }
-        .item.active { background: var(--primary); font-weight: bold; }
-        .editor { background: #1e293b; padding: 12px; border-radius: 8px; margin-top: auto; }
-        .row { display: flex; justify-content: space-between; margin-bottom: 6px; align-items: center; }
-        .row label { font-size: 10px; color: #94a3b8; }
-        .row input { width: 45px; text-align: center; border-radius: 4px; border: none; padding: 3px; font-weight: bold; }
+        .list-area { flex-grow: 1; overflow-y: auto; margin-bottom: 10px; }
+        .item { padding: 10px; background: #1e293b; margin-bottom: 5px; border-radius: 6px; cursor: pointer; font-size: 11px; border-left: 3px solid transparent; }
+        .item.active { background: var(--primary); border-left-color: white; font-weight: bold; }
+        
+        .editor { background: #1e293b; padding: 12px; border-radius: 8px; flex-shrink: 0; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center; }
+        .row label { font-size: 9px; color: #94a3b8; text-transform: uppercase; }
+        .row input { width: 45px; text-align: center; border-radius: 4px; border: none; padding: 3px; font-weight: bold; background: #334155; color: white; }
 
         /* MAIN */
-        .main { flex: 1; padding: 15px; display: flex; flex-direction: column; gap: 15px; height: 100vh; }
-        .header { background: white; padding: 15px 25px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .main { flex: 1; display: flex; flex-direction: column; padding: 15px; gap: 15px; height: 100vh; }
+        .header { height: 70px; background: white; padding: 0 25px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); flex-shrink: 0; }
         
-        /* STATUS 14 SALARIO */
-        .status-box { text-align: right; }
-        .badge-14 { padding: 10px 20px; border-radius: 8px; color: white; font-weight: bold; font-size: 18px; display: inline-block; transition: 0.3s; }
-        .progress-container { width: 200px; height: 8px; background: #e2e8f0; border-radius: 4px; margin-top: 8px; overflow: hidden; }
-        #progress-bar { height: 100%; width: 0%; background: var(--primary); transition: 0.5s; }
+        /* GRID DE GRÁFICOS */
+        .grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            grid-template-rows: calc(45vh - 60px) calc(35vh - 60px); 
+            gap: 15px; 
+            flex-grow: 1;
+            min-height: 0;
+        }
+        
+        .card { background: white; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; min-height: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .card h4 { font-size: 10px; color: #64748b; text-transform: uppercase; margin-bottom: 10px; flex-shrink: 0; }
+        .full { grid-column: span 2; }
+        .chart-box { position: relative; flex-grow: 1; width: 100%; height: 100%; min-height: 0; }
 
-        /* GRID */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: calc(45vh - 60px) calc(35vh - 60px); gap: 15px; flex-grow: 1; }
-        .card { background: white; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; min-height: 0; }
-        .chart-container { position: relative; flex-grow: 1; width: 100%; height: 100%; min-height: 0; }
-        
-        /* MODAL */
-        #modal-comp { display: none; position: fixed; inset: 20px; background: white; z-index: 100; border-radius: 15px; box-shadow: 0 0 50px rgba(0,0,0,0.3); padding: 25px; flex-direction: column; }
+        /* BADGE 14º SALÁRIO */
+        .badge-14 { padding: 8px 15px; border-radius: 8px; color: white; font-weight: bold; text-align: center; min-width: 140px; }
     </style>
 </head>
 <body>
 
 <div class="wrapper">
     <div class="sidebar">
-        <h3 style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">GESTORES</h3>
-        <div id="list" style="flex-grow:1; overflow-y:auto;"></div>
+        <h3 style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">PESQUISAR GESTOR</h3>
+        <div id="list" class="list-area"></div>
         <div class="editor">
-            <h4 style="color: var(--primary); margin-bottom: 10px; font-size: 11px;">NOTAS (MÁX 100)</h4>
+            <h4 style="color: var(--primary); margin-bottom: 8px; font-size: 10px;">AJUSTAR CRITÉRIOS</h4>
             <div id="inputs"></div>
         </div>
     </div>
 
     <div class="main">
         <div class="header">
-            <div>
-                <h2 id="h-name" style="font-size: 22px; color: var(--bg);">Nome do Gestor</h2>
-                <p id="h-role" style="color: #64748b;">Cargo</p>
-            </div>
-            <div class="status-box">
-                <div id="badge-14" class="badge-14">Nota: 0</div>
-                <div class="progress-container"><div id="progress-bar"></div></div>
-                <small id="status-text" style="font-size: 11px; font-weight: bold; color: #64748b; margin-top: 4px; display: block;"></small>
-            </div>
-            <button onclick="document.getElementById('modal-comp').style.display='flex'; updateComp();" style="background:var(--bg); color:white; border:none; padding:12px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">📊 Comparativo</button>
+            <div><h2 id="h-name" style="font-size: 20px;">Nome</h2><p id="h-role" style="font-size: 12px; color: #64748b;">Cargo</p></div>
+            <div id="badge-14" class="badge-14">Nota: 0</div>
+            <button onclick="openModal()" style="background:var(--bg); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">📊 Comparativo</button>
         </div>
 
         <div class="grid">
-            <div class="card"><h4>Equilíbrio de Competências</h4><div class="chart-container"><canvas id="c-radar"></canvas></div></div>
-            <div class="card"><h4>Peso das Categorias</h4><div class="chart-container"><canvas id="c-pie"></canvas></div></div>
-            <div class="card full"><h4>Desempenho Geral</h4><div class="chart-container"><canvas id="c-bar"></canvas></div></div>
+            <div class="card"><h4>Equilíbrio de Competências</h4><div class="chart-box"><canvas id="c-radar"></canvas></div></div>
+            <div class="card"><h4>Distribuição dos Pesos</h4><div class="chart-box"><canvas id="c-pie"></canvas></div></div>
+            <div class="card full"><h4>Progresso para o 14º Salário (Meta: 100 pts)</h4><div class="chart-box"><canvas id="c-bar"></canvas></div></div>
         </div>
     </div>
 </div>
 
-<div id="modal-comp">
+<div id="modal-comp" style="display:none; position:fixed; inset:20px; background:white; z-index:100; border-radius:15px; box-shadow:0 0 50px rgba(0,0,0,0.3); padding:25px; flex-direction:column;">
     <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-        <h2>Comparativo de Elegibilidade</h2>
-        <button onclick="document.getElementById('modal-comp').style.display='none'" style="background:var(--danger); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer">Fechar</button>
+        <h2>Comparativo de Performance</h2>
+        <button onclick="closeModal()" style="background:var(--danger); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer">Voltar</button>
     </div>
     <div style="display:flex; gap:15px; margin-bottom:15px;">
         <select id="selA" onchange="updateComp()" style="flex:1; padding:10px; border-radius:8px;"></select>
         <select id="selB" onchange="updateComp()" style="flex:1; padding:10px; border-radius:8px;"></select>
     </div>
     <div style="flex:1; display:flex; gap:20px; min-height:0;">
-        <div class="card" style="flex:1.5; border:1px solid #eee;"><div class="chart-container"><canvas id="c-comp-radar"></canvas></div></div>
+        <div class="card" style="flex:1.5; border:1px solid #eee;"><div class="chart-box"><canvas id="c-comp-radar"></canvas></div></div>
         <div id="winner-list" style="flex:1; overflow-y:auto; display:grid; gap:8px;"></div>
     </div>
 </div>
@@ -105,9 +104,29 @@
 
     function init() {
         const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+        
         radar = new Chart(document.getElementById('c-radar'), { type: 'radar', data: { labels: categorias, datasets: [{ data: [], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', borderWidth: 2 }] }, options: opt });
-        pie = new Chart(document.getElementById('c-pie'), { type: 'doughnut', data: { labels: categorias, datasets: [{ data: [], backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'] }] }, options: { ...opt, plugins: { legend: { display: true, position: 'bottom' } } } });
-        bar = new Chart(document.getElementById('c-bar'), { type: 'bar', data: { labels: categorias, datasets: [{ data: [], backgroundColor: '#3b82f6' }] }, options: { ...opt, indexAxis: 'y', scales: { x: { max: 40 } } } });
+        
+        pie = new Chart(document.getElementById('c-pie'), { type: 'doughnut', data: { labels: categorias, datasets: [{ data: [], backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'] }] }, options: { ...opt, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } } });
+        
+        // GRÁFICO DE BARRA COM ESCALA DE 100
+        bar = new Chart(document.getElementById('c-bar'), { 
+            type: 'bar', 
+            data: { labels: ['SOMA TOTAL DE PONTOS'], datasets: [{ data: [0], backgroundColor: '#3b82f6', borderRadius: 8 }] }, 
+            options: { 
+                ...opt, 
+                indexAxis: 'y', 
+                scales: { 
+                    x: { 
+                        min: 0, 
+                        max: 100, 
+                        ticks: { stepSize: 10, font: { weight: 'bold' } }, // Marcações de 10 em 10
+                        grid: { color: '#e2e8f0' }
+                    } 
+                } 
+            } 
+        });
+
         compRadar = new Chart(document.getElementById('c-comp-radar'), { type: 'radar', data: { labels: categorias, datasets: [{ label: 'A', data: [], borderColor: '#3b82f6' }, { label: 'B', data: [], borderColor: '#ef4444' }] }, options: { ...opt, plugins: { legend: { display: true } } } });
 
         const sA = document.getElementById('selA'); const sB = document.getElementById('selB');
@@ -133,15 +152,14 @@
         document.getElementById('h-role').innerText = g.r;
         const ins = document.getElementById('inputs'); ins.innerHTML = '';
         categorias.forEach((c, j) => {
-            ins.innerHTML += `<div class="row"><label>${c} (máx ${pesosMax[j]})</label>
-            <input type="number" value="${g.v[j]}" max="${pesosMax[j]}" oninput="upd(${j}, this.value)"></div>`;
+            ins.innerHTML += `<div class="row"><label>${c}</label><input type="number" value="${g.v[j]}" max="${pesosMax[j]}" oninput="upd(${j}, this.value)"></div>`;
         });
         refresh(); renderList();
     }
 
     function upd(j, v) { 
         let val = parseFloat(v) || 0;
-        if(val > pesosMax[j]) val = pesosMax[j]; // Trava no máximo da categoria
+        if(val > pesosMax[j]) val = pesosMax[j];
         gestores[atual].v[j] = val; 
         refresh(); 
     }
@@ -149,27 +167,26 @@
     function refresh() {
         const v = gestores[atual].v; const tot = v.reduce((a, b) => a + b, 0);
         const badge = document.getElementById('badge-14');
-        const barProg = document.getElementById('progress-bar');
-        const statusTxt = document.getElementById('status-text');
+        
+        // Cores Dinâmicas baseadas na meta de 100
+        let color = "var(--danger)";
+        if(tot >= 100) color = "var(--success)";
+        else if(tot >= 80) color = "var(--gold)";
 
-        badge.innerText = `Nota: ${tot.toFixed(1)}`;
-        barProg.style.width = tot + "%";
-
-        if(tot >= 100) {
-            badge.style.backgroundColor = "var(--success)";
-            badge.innerText = "🏆 ELEGÍVEL AO 14º";
-            statusTxt.innerText = "META ATINGIDA! PARABÉNS.";
-            statusTxt.style.color = "var(--success)";
-        } else {
-            badge.style.backgroundColor = tot >= 70 ? "var(--gold)" : "var(--danger)";
-            statusTxt.innerText = `Faltam ${(100 - tot).toFixed(1)} pontos para o 14º`;
-            statusTxt.style.color = "#64748b";
-        }
+        badge.style.backgroundColor = color;
+        badge.innerText = tot >= 100 ? "🏆 14º SALÁRIO OK" : `NOTA: ${tot.toFixed(1)} / 100`;
 
         radar.data.datasets[0].data = v; radar.update();
         pie.data.datasets[0].data = v; pie.update();
-        bar.data.datasets[0].data = v; bar.update();
+        
+        // Atualiza a barra grande de 100 pontos
+        bar.data.datasets[0].data = [tot];
+        bar.data.datasets[0].backgroundColor = color;
+        bar.update();
     }
+
+    function openModal() { document.getElementById('modal-comp').style.display='flex'; updateComp(); }
+    function closeModal() { document.getElementById('modal-comp').style.display='none'; }
 
     function updateComp() {
         const gA = gestores[document.getElementById('selA').value];
@@ -180,7 +197,7 @@
         compRadar.update();
         categorias.forEach((c, i) => {
             const win = gA.v[i] > gB.v[i] ? gA.n : (gB.v[i] > gA.v[i] ? gB.n : 'Empate');
-            winList.innerHTML += `<div style="padding:8px; background:#f8fafc; border-left:4px solid #3b82f6; font-size:12px;"><b>${c}</b><br>Melhor: ${win.split(' ')[0]}</div>`;
+            winList.innerHTML += `<div style="padding:8px; background:#f8fafc; border-left:4px solid #3b82f6; font-size:11px;"><b>${c}</b><br>Melhor: ${win.split(' ')[0]}</div>`;
         });
     }
 
