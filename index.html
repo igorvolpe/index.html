@@ -12,7 +12,7 @@
             --success: #10b981; --gold: #f59e0b; --danger: #ef4444; 
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: #f8fafc; height: 100vh; overflow-x: hidden; }
+        body { background: #f8fafc; min-height: 100vh; }
         .wrapper { display: flex; min-height: 100vh; }
 
         /* SIDEBAR */
@@ -31,27 +31,28 @@
         .row label { font-size: 9px; color: #cbd5e1; font-weight: 900; }
         .row input { width: 70px; text-align: center; border-radius: 6px; border: none; padding: 5px; font-weight: 900; background: #334155; color: white; }
 
-        /* MAIN */
-        .main { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 20px; min-width: 900px; }
+        /* MAIN AREA */
+        .main { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
         .header { background: white; padding: 20px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .actions { display: flex; gap: 10px; }
         .btn-pdf { background: #be123c; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 900; }
         .btn-money { background: #15803d; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 900; }
 
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: white; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; position: relative;}
+        .card { background: white; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; }
         .card h4 { font-weight: 900; font-size: 11px; color: #64748b; margin-bottom: 10px; text-transform: uppercase; }
         .full { grid-column: span 2; }
-        .chart-box { height: 220px; }
+        .chart-box { height: 220px; min-width: 0; }
 
-        #obs-area { width: 100%; height: 60px; border-radius: 8px; border: 1px solid #e2e8f0; padding: 10px; font-size: 12px; font-weight: 600; resize: none; margin-top: 10px; }
+        #obs-area { width: 100%; height: 80px; border-radius: 8px; border: 1px solid #e2e8f0; padding: 10px; font-size: 12px; font-weight: 600; resize: none; margin-top: 10px; }
 
-        /* SALARIO MODAL */
+        /* MODAL SALARIO */
         #salary-modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:30px; border-radius:20px; box-shadow:0 0 50px rgba(0,0,0,0.5); z-index:100; width: 500px; }
         .overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:99; }
         .salary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 13px; font-weight: bold;}
 
-        .no-print { display: none !important; }
+        /* ESTILO PARA O PDF (Invisível na tela) */
+        #pdf-template { position: absolute; left: -9999px; top: 0; width: 1100px; background: #f8fafc; padding: 20px; }
     </style>
 </head>
 <body>
@@ -64,7 +65,7 @@
 </div>
 
 <div class="wrapper">
-    <div class="sidebar" id="side-menu">
+    <div class="sidebar">
         <h2 style="font-size: 24px; font-weight: 900; color: #60a5fa; margin-bottom: 20px;">SACRES</h2>
         
         <div class="add-area">
@@ -82,16 +83,16 @@
         </div>
     </div>
 
-    <div class="main" id="report-area">
+    <div class="main" id="main-content">
         <div class="header">
             <div>
                 <h2 id="h-name" style="font-weight: 900; font-size: 22px; color: #1e293b;">SACRES</h2>
                 <p id="h-role" style="font-weight: 800; color: var(--primary); text-transform: uppercase;">Aguardando Seleção</p>
             </div>
-            <div id="badge-total" style="padding: 15px; border-radius: 12px; color: white; font-weight: 900; min-width: 150px; text-align: center;">TOTAL: 0</div>
+            <div id="badge-total" style="padding: 15px; border-radius: 12px; color: white; font-weight: 900; min-width: 150px; text-align: center; font-size: 18px;">TOTAL: 0</div>
             <div class="actions">
                 <button class="btn-money" onclick="abrirSalario()">💰 SALÁRIOS</button>
-                <button class="btn-pdf" id="pdf-button" onclick="gerarPDF()">📄 PDF</button>
+                <button class="btn-pdf" onclick="gerarPDF()">📄 GERAR PDF</button>
             </div>
         </div>
 
@@ -101,8 +102,8 @@
             
             <div class="card full">
                 <h4 style="color: var(--primary); font-weight: 900;">📊 COMPARATIVO DE PERFORMANCE</h4>
-                <div class="chart-box" style="height: 200px;"><canvas id="c-comp"></canvas></div>
-                <textarea id="obs-area" placeholder="Escreva observações sobre o gestor aqui..."></textarea>
+                <div class="chart-box" style="height: 180px;"><canvas id="c-comp"></canvas></div>
+                <textarea id="obs-area" placeholder="Escreva observações sobre o gestor aqui..." oninput="salvarObs()"></textarea>
             </div>
         </div>
     </div>
@@ -111,10 +112,8 @@
 <script>
     const categorias = ['RESULTADOS', 'GESTÃO PESSOAS', 'COMPROMETIMENTO', 'CONTRIBUIÇÃO', 'CULTURA'];
     let atual = 0;
-    
-    // CARREGAR DADOS OU INICIAR PADRÃO
     let gestores = JSON.parse(localStorage.getItem('sacres_data')) || [
-        { n: 'FABIO HENRIQUE', r: 'GERENTE', v: [100, 25, 25, 25, 25], s: 5000, obs: "" }
+        { n: 'EXEMPLO', r: 'GERENTE', v: [100, 25, 25, 25, 25], s: 0, obs: "" }
     ];
 
     let radar, pie, compChart;
@@ -133,8 +132,9 @@
         const r = document.getElementById('new-role').value.toUpperCase();
         const s = parseFloat(document.getElementById('new-salary').value) || 0;
         if(!n || !r) return alert("Preencha Nome e Cargo!");
-        gestores.push({ n, r, v: [0, 0, 0, 0, 0], s: s, obs: "" });
+        gestores.push({ n, r, v: [0, 0, 0, 0, 0], s, obs: "" });
         save(); renderList(); load(gestores.length - 1);
+        document.getElementById('new-name').value = ''; document.getElementById('new-role').value = ''; document.getElementById('new-salary').value = '';
     }
 
     function excluirGestor(index, e) {
@@ -173,16 +173,18 @@
         let val = Math.min(parseFloat(v) || 0, 25);
         gestores[atual].v[j] = val; 
         gestores[atual].v[0] = gestores[atual].v.slice(1).reduce((a, b) => a + b, 0);
-        gestores[atual].obs = document.getElementById('obs-area').value;
-        save(); refresh(); load(atual);
+        save(); refresh(); 
+        document.getElementById('inp-0').value = gestores[atual].v[0].toFixed(1);
     }
 
+    function salvarObs() { gestores[atual].obs = document.getElementById('obs-area').value; save(); }
     function save() { localStorage.setItem('sacres_data', JSON.stringify(gestores)); }
 
     function refresh() {
         const g = gestores[atual];
-        document.getElementById('badge-total').style.backgroundColor = g.v[0] >= 100 ? "var(--success)" : (g.v[0] >= 80 ? "var(--gold)" : "var(--primary)");
-        document.getElementById('badge-total').innerText = `TOTAL: ${g.v[0].toFixed(1)}`;
+        const badge = document.getElementById('badge-total');
+        badge.style.backgroundColor = g.v[0] >= 100 ? "var(--success)" : (g.v[0] >= 80 ? "var(--gold)" : "var(--primary)");
+        badge.innerText = `TOTAL: ${g.v[0].toFixed(1)}`;
         radar.data.datasets[0].data = g.v.slice(1); radar.update();
         pie.data.datasets[0].data = g.v.slice(1); pie.update();
         compChart.data.labels = gestores.map(x => x.n);
@@ -190,18 +192,16 @@
         compChart.update();
     }
 
-    // SALARIO LOGICA
     function abrirSalario() {
         document.getElementById('salary-modal').style.display = 'block';
         document.querySelector('.overlay').style.display = 'block';
         const list = document.getElementById('salary-list');
         list.innerHTML = '';
         gestores.forEach(g => {
-            const bonus = g.s * 0.4;
             list.innerHTML += `<div class="salary-row">
                 <span>${g.n}</span>
                 <span>Salário: R$ ${g.s.toLocaleString()}</span>
-                <span style="color:var(--success)">40%: R$ ${bonus.toLocaleString()}</span>
+                <span style="color:var(--success)">40%: R$ ${(g.s * 0.4).toLocaleString()}</span>
             </div>`;
         });
     }
@@ -210,11 +210,24 @@
         document.querySelector('.overlay').style.display = 'none';
     }
 
+    // PDF DEFINITIVO - SEM CORTES
     function gerarPDF() {
-        const element = document.getElementById('report-area');
-        document.getElementById('pdf-button').classList.add('no-print');
-        const opt = { margin: 5, filename: `SACRES_${gestores[atual].n}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
-        html2pdf().set(opt).from(element).save().then(() => document.getElementById('pdf-button').classList.remove('no-print'));
+        const element = document.getElementById('main-content');
+        const opt = {
+            margin: 10,
+            filename: `Relatorio_SACRES_${gestores[atual].n}.pdf`,
+            image: { type: 'jpeg', quality: 1 },
+            html2canvas: { 
+                scale: 2, 
+                useCORS: true,
+                letterRendering: true,
+                windowWidth: 1200 // Simula uma tela larga para não espremer os cards
+            },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        };
+
+        // Adiciona classe de carregamento/impressão se necessário e gera
+        html2pdf().set(opt).from(element).save();
     }
 
     window.onload = init;
