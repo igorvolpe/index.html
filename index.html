@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SACRES v7 - Full History & Auto-Sum</title>
+    <title>SACRES - Inteligência Estratégica</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
@@ -18,13 +18,13 @@
 
         /* SIDEBAR */
         .sidebar { width: 310px; background: var(--sidebar); color: white; padding: 25px; display: flex; flex-direction: column; flex-shrink: 0; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
-        .sidebar h2 { font-size: 28px; font-weight: 900; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 25px; }
+        .sidebar h2 { font-size: 28px; font-weight: 900; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 25px; letter-spacing: 1px; }
         
         .add-area { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
-        .add-area input { width: 100%; padding: 10px; margin-bottom: 8px; border-radius: 8px; border: none; background: #1e293b; color: white; font-size: 11px; }
+        .add-area input { width: 100%; padding: 10px; margin-bottom: 8px; border-radius: 8px; border: none; background: #1e293b; color: white; font-size: 11px; font-weight: bold; }
         .btn-add { width: 100%; background: linear-gradient(135deg, var(--success), #16a34a); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 800; font-size: 11px; }
 
-        .list-area { flex-grow: 1; overflow-y: auto; margin-bottom: 20px; max-height: 200px; }
+        .list-area { flex-grow: 1; overflow-y: auto; margin-bottom: 20px; max-height: 180px; }
         .item { padding: 10px; background: rgba(255,255,255,0.03); margin-bottom: 8px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid transparent; transition: 0.2s; font-size: 11px; }
         .item.active { background: rgba(99, 102, 241, 0.2); border-color: var(--primary); }
 
@@ -34,17 +34,18 @@
         .row input { width: 60px; padding: 5px; border-radius: 6px; border: none; background: #334155; color: white; text-align: center; font-weight: 900; }
         .row.total-row input { background: var(--primary); color: white; }
 
-        /* MAIN CONTENT */
+        /* MAIN */
         .main { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px; align-items: center; }
         #print-container { width: 1050px; display: flex; flex-direction: column; gap: 15px; background: var(--bg-body); padding: 10px; }
 
         .header { background: var(--card-bg); padding: 20px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; }
         .badge-total { padding: 12px 25px; border-radius: 15px; color: white; font-weight: 900; font-size: 18px; }
         
-        .actions { display: flex; gap: 8px; }
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
         .btn-action { padding: 10px 14px; border-radius: 8px; border: none; font-weight: 800; cursor: pointer; transition: 0.2s; color: white; font-size: 10px; display: flex; align-items: center; gap: 5px; }
         .btn-save { background: var(--primary); }
         .btn-hist { background: var(--secondary); }
+        .btn-raiox { background: #334155; border: 1px solid #475569; }
         .btn-money { background: #0f172a; }
         .btn-pdf { background: var(--danger); }
 
@@ -56,29 +57,44 @@
 
         /* MODAIS */
         .overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.85); z-index:99; backdrop-filter: blur(4px); }
-        .modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:30px; border-radius:20px; z-index:100; width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
-        .hist-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #f1f5f9; font-weight: bold; }
+        .modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:30px; border-radius:20px; z-index:100; width: 650px; max-height: 85vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.4); }
+        
+        /* HEATMAP STYLES */
+        .raiox-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px; }
+        .raiox-card { background: #f8fafc; padding: 15px; border-radius: 12px; border-left: 5px solid var(--primary); }
+        .raiox-card h5 { font-size: 10px; color: #64748b; margin-bottom: 5px; }
+        .raiox-card p { font-size: 16px; font-weight: 900; color: #0f172a; }
+
+        .hist-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #f1f5f9; font-weight: bold; font-size: 13px; }
+        #obs-area { width: 100%; height: 60px; margin-top: 10px; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; background: #f8fafc; font-weight: 600; resize: none; color: #475569; font-size: 11px; }
     </style>
 </head>
 <body>
 
 <div class="overlay" onclick="fecharModais()"></div>
 
+<div id="modal-raiox" class="modal">
+    <h2 style="margin-bottom: 10px; font-weight: 900; color: var(--sidebar);">📊 Raio-X Estratégico da Equipe</h2>
+    <p style="font-size: 12px; color: #64748b; margin-bottom: 20px;">Análise em tempo real de todos os gestores cadastrados.</p>
+    <div id="raiox-content"></div>
+    <button onclick="fecharModais()" style="margin-top:20px; width:100%; padding:12px; background:var(--sidebar); color:white; border:none; border-radius:10px; cursor:pointer; font-weight:900;">FECHAR ANÁLISE</button>
+</div>
+
 <div id="modal-salary" class="modal">
-    <h2 style="margin-bottom: 20px; font-weight: 900;">💰 Gestão Financeira (Bônus 40%)</h2>
+    <h2 style="margin-bottom: 20px; font-weight: 900;">💰 Financeiro (Bônus 40%)</h2>
     <div id="salary-list"></div>
     <button onclick="fecharModais()" style="margin-top:20px; width:100%; padding:12px; background:var(--sidebar); color:white; border:none; border-radius:10px; cursor:pointer; font-weight:900;">FECHAR</button>
 </div>
 
 <div id="modal-history" class="modal">
-    <h2 id="hist-title" style="margin-bottom: 20px; font-weight: 900;">📜 Histórico de Avaliações</h2>
+    <h2 id="hist-title" style="margin-bottom: 20px; font-weight: 900;">📜 Histórico</h2>
     <div id="hist-content"></div>
     <button onclick="fecharModais()" style="margin-top:20px; width:100%; padding:12px; background:var(--secondary); color:white; border:none; border-radius:10px; cursor:pointer; font-weight:900;">FECHAR</button>
 </div>
 
 <div class="wrapper">
     <aside class="sidebar">
-        <h2>SACRES v7</h2>
+        <h2>SACRES</h2>
         <div class="add-area">
             <input type="text" id="new-name" placeholder="NOME DO COLABORADOR">
             <input type="text" id="new-role" placeholder="CARGO">
@@ -87,7 +103,7 @@
         </div>
         <div id="list" class="list-area"></div>
         <div class="editor">
-            <h4 style="color: #818cf8; font-size: 9px; margin-bottom: 10px; font-weight: 900;">NOTAS TÉCNICAS</h4>
+            <h4 style="color: #818cf8; font-size: 9px; margin-bottom: 10px; font-weight: 900;">AVALIAÇÃO TÉCNICA</h4>
             <div id="inputs"></div>
         </div>
     </aside>
@@ -101,8 +117,9 @@
                 </div>
                 <div id="badge-total" class="badge-total" style="background: var(--primary)">PONTUAÇÃO: 0 / 100</div>
                 <div class="actions">
+                    <button class="btn-action btn-raiox" onclick="abrirRaioX()">📊 RAIO-X EQUIPE</button>
                     <button class="btn-action btn-save" onclick="salvarNoHistorico()">📌 SALVAR</button>
-                    <button class="btn-action btn-hist" onclick="abrirAbaHistorico()">📜 ABA HISTÓRICO</button>
+                    <button class="btn-action btn-hist" onclick="abrirAbaHistorico()">📜 HISTÓRICO</button>
                     <button class="btn-action btn-money" onclick="abrirSalario()">💰 FINANCEIRO</button>
                     <button class="btn-action btn-pdf" onclick="gerarPDF()">📄 PDF</button>
                 </div>
@@ -110,11 +127,11 @@
 
             <div class="grid">
                 <div class="card"><h4>📊 EQUILÍBRIO COMPETÊNCIAS</h4><div class="chart-container"><canvas id="c-radar"></canvas></div></div>
-                <div class="card"><h4>📈 EVOLUÇÃO TEMPORAL</h4><div class="chart-container"><canvas id="c-line"></canvas></div></div>
+                <div class="card"><h4>📈 EVOLUÇÃO NO TEMPO</h4><div class="chart-container"><canvas id="c-line"></canvas></div></div>
                 <div class="card full">
-                    <h4>📊 COMPARATIVO DE PERFORMANCE</h4>
+                    <h4>📊 COMPARATIVO DE PERFORMANCE (RANKING)</h4>
                     <div class="chart-container" style="height: 140px;"><canvas id="c-comp"></canvas></div>
-                    <textarea id="obs-area" placeholder="Observações de feedback..." oninput="salvarObs()"></textarea>
+                    <textarea id="obs-area" placeholder="Notas de feedback e pontos de melhoria..." oninput="salvarObs()"></textarea>
                 </div>
             </div>
         </div>
@@ -124,9 +141,7 @@
 <script>
     const categorias = ['RESULTADOS', 'GESTÃO PESSOAS', 'COMPROMETIMENTO', 'CONTRIBUIÇÃO', 'CULTURA'];
     let atual = 0;
-    let gestores = JSON.parse(localStorage.getItem('sacres_v7_data')) || [
-        { n: 'GESTOR EXEMPLO', r: 'GERENTE', v: [100, 25, 25, 25, 25], s: 5000, obs: "", history: [] }
-    ];
+    let gestores = JSON.parse(localStorage.getItem('sacres_master_data')) || [];
 
     let radar, line, comp;
 
@@ -134,16 +149,14 @@
         radar = new Chart(document.getElementById('c-radar').getContext('2d'), { type: 'radar', data: { labels: categorias.slice(1), datasets: [{ data: [], backgroundColor: 'rgba(99, 102, 241, 0.4)', borderColor: '#6366f1', borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 25, ticks: { display: false } } }, plugins: { legend: { display: false } } } });
         line = new Chart(document.getElementById('c-line').getContext('2d'), { type: 'line', data: { labels: [], datasets: [{ data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.1)', fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 100 } } } });
         comp = new Chart(document.getElementById('c-comp').getContext('2d'), { type: 'bar', data: { labels: [], datasets: [{ data: [], backgroundColor: '#6366f1', borderRadius: 5 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { max: 100 } } } });
-        renderList(); load(0);
+        renderList(); if(gestores.length > 0) load(0);
     }
 
     function load(i) {
-        if(gestores.length === 0) return;
         atual = i; const g = gestores[i];
         document.getElementById('h-name').innerText = g.n;
         document.getElementById('h-role').innerText = g.r;
         document.getElementById('obs-area').value = g.obs || "";
-        
         const ins = document.getElementById('inputs'); ins.innerHTML = '';
         categorias.forEach((c, j) => {
             const isTotal = j === 0;
@@ -155,49 +168,86 @@
         refresh(); renderList();
     }
 
-    // AQUI ESTÁ A SOMA AUTOMÁTICA DOS TÓPICOS
     function upd(j, v) {
         let val = Math.min(parseFloat(v) || 0, 25);
         gestores[atual].v[j] = val;
-        
-        // RESULTADOS (v[0]) = Soma de v[1] + v[2] + v[3] + v[4]
         gestores[atual].v[0] = gestores[atual].v.slice(1).reduce((a, b) => a + b, 0);
-        
-        // Atualiza visualmente o campo de Resultados no editor
         document.getElementById('inp-0').value = gestores[atual].v[0].toFixed(1);
-        
         save(); refresh();
     }
 
     function refresh() {
+        if(gestores.length === 0) return;
         const g = gestores[atual];
         const badge = document.getElementById('badge-total');
         badge.innerText = `PONTUAÇÃO: ${g.v[0].toFixed(1)} / 100`;
         badge.style.background = g.v[0] >= 90 ? "var(--success)" : (g.v[0] >= 75 ? "var(--gold)" : "var(--primary)");
-
         radar.data.datasets[0].data = g.v.slice(1); radar.update();
-        line.data.labels = (g.history || []).map((h) => h.data);
-        line.data.datasets[0].data = (g.history || []).map((h) => h.nota); line.update();
+        line.data.labels = (g.history || []).map(h => h.data);
+        line.data.datasets[0].data = (g.history || []).map(h => h.nota); line.update();
         comp.data.labels = gestores.map(x => x.n);
         comp.data.datasets[0].data = gestores.map(x => x.v[0]); comp.update();
     }
 
+    function abrirRaioX() {
+        if(gestores.length === 0) return alert("Adicione gestores para analisar.");
+        const content = document.getElementById('raiox-content');
+        
+        // Cálculos do Raio-X
+        let medias = [0, 0, 0, 0, 0];
+        gestores.forEach(g => { g.v.forEach((val, idx) => medias[idx] += val); });
+        medias = medias.map(m => m / gestores.length);
+
+        const melhorIdx = medias.slice(1).indexOf(Math.max(...medias.slice(1))) + 1;
+        const piorIdx = medias.slice(1).indexOf(Math.min(...medias.slice(1))) + 1;
+        const mediaGeral = medias[0];
+
+        content.innerHTML = `
+            <div class="raiox-card" style="border-color: var(--primary); margin-bottom: 15px;">
+                <h5>MÉDIA DE PERFORMANCE DA EQUIPE</h5>
+                <p>${mediaGeral.toFixed(1)} / 100</p>
+            </div>
+            <div class="raiox-grid">
+                <div class="raiox-card" style="border-color: var(--success);">
+                    <h5>MAIOR FORÇA DO TIME</h5>
+                    <p>${categorias[melhorIdx]}</p>
+                </div>
+                <div class="raiox-card" style="border-color: var(--danger);">
+                    <h5>MAIOR GARGALO (ATENÇÃO)</h5>
+                    <p>${categorias[piorIdx]}</p>
+                </div>
+            </div>
+            <div style="margin-top: 20px;">
+                <h5 style="font-size: 10px; color: #64748b; margin-bottom: 10px;">MÉDIA POR CATEGORIA:</h5>
+                ${categorias.slice(1).map((cat, i) => `
+                    <div style="margin-bottom: 8px;">
+                        <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:bold; margin-bottom:3px;">
+                            <span>${cat}</span><span>${medias[i+1].toFixed(1)}/25</span>
+                        </div>
+                        <div style="width:100%; height:6px; background:#e2e8f0; border-radius:10px; overflow:hidden;">
+                            <div style="width:${(medias[i+1]/25)*100}%; height:100%; background:var(--primary);"></div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        document.getElementById('modal-raiox').style.display = 'block';
+        document.querySelector('.overlay').style.display = 'block';
+    }
+
     function salvarNoHistorico() {
         const g = gestores[atual];
-        const agora = new Date();
-        const dataFormatada = agora.toLocaleDateString('pt-BR') + " " + agora.getHours() + ":" + agora.getMinutes();
+        const data = new Date().toLocaleDateString('pt-BR');
         if(!g.history) g.history = [];
-        g.history.push({ data: dataFormatada, nota: g.v[0] });
-        save(); refresh();
-        alert("Avaliação arquivada no histórico!");
+        g.history.push({ data: data, nota: g.v[0] });
+        save(); refresh(); alert("Avaliação registrada com sucesso!");
     }
 
     function abrirAbaHistorico() {
         const g = gestores[atual];
-        document.getElementById('hist-title').innerText = `📜 Histórico: ${g.n}`;
         const content = document.getElementById('hist-content');
-        content.innerHTML = (g.history || []).length > 0 ? "" : "<p>Nenhum registro encontrado.</p>";
-        (g.history || []).slice().reverse().forEach((h, idx) => {
+        content.innerHTML = (g.history || []).length > 0 ? "" : "<p>Sem histórico disponível.</p>";
+        (g.history || []).slice().reverse().forEach(h => {
             content.innerHTML += `<div class="hist-item"><span>📅 ${h.data}</span><span style="color:var(--primary)">Nota: ${h.nota.toFixed(1)}</span></div>`;
         });
         document.getElementById('modal-history').style.display = 'block';
@@ -213,19 +263,16 @@
         document.querySelector('.overlay').style.display = 'block';
     }
 
-    function fecharModais() { 
-        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-        document.querySelector('.overlay').style.display = 'none';
-    }
+    function fecharModais() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); document.querySelector('.overlay').style.display = 'none'; }
 
     function addGestor() {
         const n = document.getElementById('new-name').value.toUpperCase();
         const r = document.getElementById('new-role').value.toUpperCase();
         const s = parseFloat(document.getElementById('new-salary').value) || 0;
-        if(!n || !r) return alert("Preencha Nome e Cargo!");
+        if(!n || !r) return alert("Preencha o nome e o cargo.");
         gestores.push({ n, r, v: [0, 0, 0, 0, 0], s, obs: "", history: [] });
         save(); renderList(); load(gestores.length - 1);
-        document.getElementById('new-name').value=''; document.getElementById('new-role').value='';
+        document.getElementById('new-name').value=''; document.getElementById('new-role').value=''; document.getElementById('new-salary').value='';
     }
 
     function renderList() {
@@ -237,22 +284,10 @@
         });
     }
 
-    function excluirGestor(index, e) {
-        e.stopPropagation();
-        if(confirm(`Excluir ${gestores[index].n}?`)) {
-            gestores.splice(index, 1); save(); renderList(); if(gestores.length > 0) load(0);
-        }
-    }
-
-    function gerarPDF() {
-        const actions = document.querySelector('.actions');
-        actions.style.visibility = 'hidden';
-        const opt = { margin: 0, filename: `SACRES_V7_${gestores[atual].n}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'px', format: [1050, 800], orientation: 'landscape' } };
-        html2pdf().from(document.getElementById('print-container')).set(opt).save().then(() => { actions.style.visibility = 'visible'; });
-    }
-
+    function excluirGestor(idx, e) { e.stopPropagation(); if(confirm("Excluir colaborador?")) { gestores.splice(idx, 1); save(); renderList(); if(gestores.length > 0) load(0); else { document.getElementById('h-name').innerText = "Selecione"; document.getElementById('inputs').innerHTML = ""; } } }
     function salvarObs() { gestores[atual].obs = document.getElementById('obs-area').value; save(); }
-    function save() { localStorage.setItem('sacres_v7_data', JSON.stringify(gestores)); }
+    function save() { localStorage.setItem('sacres_master_data', JSON.stringify(gestores)); }
+    function gerarPDF() { const actions = document.querySelector('.actions'); actions.style.visibility = 'hidden'; const opt = { margin: 0, filename: `SACRES_${gestores[atual].n}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'px', format: [1050, 800], orientation: 'landscape' } }; html2pdf().from(document.getElementById('print-container')).set(opt).save().then(() => { actions.style.visibility = 'visible'; }); }
 
     window.onload = init;
 </script>
