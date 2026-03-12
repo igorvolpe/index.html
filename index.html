@@ -3,19 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SACRES v5 - Premium Edition</title>
+    <title>SACRES v6 - Performance Timeline</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root { 
-            --bg-body: #f1f5f9;
-            --sidebar: #0f172a; 
-            --primary: #6366f1; 
-            --secondary: #a855f7;
-            --success: #22c55e; 
-            --gold: #eab308; 
-            --danger: #f43f5e; 
-            --card-bg: #ffffff;
+            --bg-body: #f1f5f9; --sidebar: #0f172a; --primary: #6366f1; 
+            --secondary: #a855f7; --success: #22c55e; --gold: #eab308; 
+            --danger: #f43f5e; --card-bg: #ffffff;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: var(--bg-body); color: #1e293b; overflow-x: hidden; }
@@ -23,75 +18,68 @@
 
         /* SIDEBAR */
         .sidebar { width: 310px; background: var(--sidebar); color: white; padding: 25px; display: flex; flex-direction: column; flex-shrink: 0; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
-        .sidebar h2 { font-size: 28px; font-weight: 900; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 25px; letter-spacing: -1px; }
+        .sidebar h2 { font-size: 28px; font-weight: 900; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 25px; }
         
         .add-area { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
-        .add-area input { width: 100%; padding: 10px; margin-bottom: 8px; border-radius: 8px; border: none; background: #1e293b; color: white; font-size: 12px; font-weight: bold; }
-        .btn-add { width: 100%; background: linear-gradient(135deg, var(--success), #16a34a); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 800; transition: 0.3s; }
-        .btn-add:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4); }
+        .add-area input { width: 100%; padding: 10px; margin-bottom: 8px; border-radius: 8px; border: none; background: #1e293b; color: white; font-size: 11px; }
+        .btn-add { width: 100%; background: linear-gradient(135deg, var(--success), #16a34a); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 800; font-size: 11px; }
 
-        .list-area { flex-grow: 1; overflow-y: auto; margin-bottom: 20px; max-height: 300px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .item { padding: 12px; background: rgba(255,255,255,0.03); margin-bottom: 8px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid transparent; transition: 0.2s; }
-        .item:hover { background: rgba(255,255,255,0.08); }
+        .list-area { flex-grow: 1; overflow-y: auto; margin-bottom: 20px; max-height: 250px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .item { padding: 10px; background: rgba(255,255,255,0.03); margin-bottom: 8px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid transparent; transition: 0.2s; font-size: 11px; }
         .item.active { background: rgba(99, 102, 241, 0.2); border-color: var(--primary); }
-        .item b { font-size: 12px; letter-spacing: 0.5px; }
 
         .editor { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; }
-        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .row label { font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
-        .row input { width: 65px; padding: 6px; border-radius: 6px; border: none; background: #334155; color: white; text-align: center; font-weight: 900; }
+        .row input { width: 60px; padding: 5px; border-radius: 6px; border: none; background: #334155; color: white; text-align: center; font-weight: 900; }
 
         /* MAIN CONTENT */
-        .main { flex: 1; padding: 25px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
-        
-        /* CONTAINER FIXO PARA O PDF */
-        #print-container { width: 1050px; display: flex; flex-direction: column; gap: 20px; background: var(--bg-body); padding: 10px; }
+        .main { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
+        #print-container { width: 1050px; display: flex; flex-direction: column; gap: 15px; background: var(--bg-body); padding: 10px; }
 
-        .header { background: var(--card-bg); padding: 25px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; }
-        .header h2 { font-size: 22px; font-weight: 900; color: #0f172a; }
+        .header { background: var(--card-bg); padding: 20px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; }
+        .badge-total { padding: 12px 25px; border-radius: 15px; color: white; font-weight: 900; font-size: 18px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         
-        .badge-total { padding: 15px 30px; border-radius: 15px; color: white; font-weight: 900; font-size: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: 0.5s; }
-        
-        .actions { display: flex; gap: 12px; }
-        .btn-action { padding: 12px 20px; border-radius: 10px; border: none; font-weight: 800; cursor: pointer; transition: 0.2s; color: white; display: flex; align-items: center; gap: 8px; font-size: 12px; }
+        .actions { display: flex; gap: 10px; }
+        .btn-action { padding: 10px 15px; border-radius: 8px; border: none; font-weight: 800; cursor: pointer; transition: 0.2s; color: white; font-size: 11px; display: flex; align-items: center; gap: 5px; }
+        .btn-save-point { background: var(--primary); }
         .btn-money { background: #0f172a; }
         .btn-pdf { background: var(--danger); }
-        .btn-action:hover { transform: scale(1.05); opacity: 0.9; }
 
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; }
-        .card { background: var(--card-bg); border-radius: 20px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; }
-        .card h4 { font-size: 11px; font-weight: 900; color: #64748b; margin-bottom: 15px; letter-spacing: 1px; text-transform: uppercase; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
+        .card { background: var(--card-bg); border-radius: 15px; padding: 18px; border: 1px solid #e2e8f0; }
+        .card h4 { font-size: 10px; font-weight: 900; color: #64748b; margin-bottom: 12px; letter-spacing: 1px; text-transform: uppercase; }
         .full { grid-column: span 2; }
-        .chart-container { height: 180px; position: relative; width: 100%; }
+        .chart-container { height: 160px; position: relative; width: 100%; }
 
-        #obs-area { width: 100%; height: 70px; margin-top: 15px; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-weight: 600; resize: none; color: #475569; font-size: 12px; }
+        #obs-area { width: 100%; height: 60px; margin-top: 10px; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; background: #f8fafc; font-weight: 600; resize: none; color: #475569; font-size: 11px; }
 
         /* MODAL */
         .overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.85); z-index:99; backdrop-filter: blur(4px); }
-        #salary-modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:35px; border-radius:24px; z-index:100; width: 550px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        #salary-modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:30px; border-radius:20px; z-index:100; width: 550px; }
     </style>
 </head>
 <body>
 
 <div class="overlay" onclick="fecharSalario()"></div>
 <div id="salary-modal">
-    <h2 style="margin-bottom: 20px; font-weight: 900; color: var(--sidebar);">💰 Painel Financeiro (Bônus 40%)</h2>
+    <h2 style="margin-bottom: 20px; font-weight: 900;">💰 Painel Financeiro (Bônus 40%)</h2>
     <div id="salary-list"></div>
-    <button onclick="fecharSalario()" style="margin-top:25px; width:100%; padding:12px; background:var(--sidebar); color:white; border:none; border-radius:10px; cursor:pointer; font-weight:900;">FECHAR</button>
+    <button onclick="fecharSalario()" style="margin-top:20px; width:100%; padding:12px; background:var(--sidebar); color:white; border:none; border-radius:10px; cursor:pointer; font-weight:900;">FECHAR</button>
 </div>
 
 <div class="wrapper">
     <aside class="sidebar">
-        <h2>SACRES v5</h2>
+        <h2>SACRES v6</h2>
         <div class="add-area">
             <input type="text" id="new-name" placeholder="NOME DO GESTOR">
             <input type="text" id="new-role" placeholder="CARGO">
             <input type="number" id="new-salary" placeholder="SALÁRIO R$">
-            <button class="btn-add" onclick="addGestor()">+ ADICIONAR AO SISTEMA</button>
+            <button class="btn-add" onclick="addGestor()">+ ADICIONAR GESTOR</button>
         </div>
         <div id="list" class="list-area"></div>
         <div class="editor">
-            <h4 style="color: #818cf8; font-size: 10px; margin-bottom: 12px; font-weight: 900;">NOTAS TÉCNICAS</h4>
+            <h4 style="color: #818cf8; font-size: 9px; margin-bottom: 10px; font-weight: 900;">AVALIAÇÃO ATUAL</h4>
             <div id="inputs"></div>
         </div>
     </aside>
@@ -100,32 +88,32 @@
         <div id="print-container">
             <div class="header">
                 <div>
-                    <h2 id="h-name">Selecione um Gestor</h2>
-                    <p id="h-role" style="font-weight: 700; color: var(--primary); font-size: 13px; text-transform: uppercase;"></p>
+                    <h2 id="h-name" style="font-size: 20px; font-weight: 900;">Gestor</h2>
+                    <p id="h-role" style="font-weight: 700; color: var(--primary); font-size: 12px;"></p>
                 </div>
                 <div id="badge-total" class="badge-total">TOTAL: 0.0</div>
                 <div class="actions">
+                    <button class="btn-action btn-save-point" onclick="salvarNoHistorico()">📌 SALVAR NO HISTÓRICO</button>
                     <button class="btn-action btn-money" onclick="abrirSalario()">💰 SALÁRIOS</button>
-                    <button class="btn-action btn-pdf" id="btn-pdf-trigger" onclick="gerarPDF()">📄 GERAR PDF</button>
+                    <button class="btn-action btn-pdf" onclick="gerarPDF()">📄 PDF</button>
                 </div>
             </div>
 
             <div class="grid">
                 <div class="card">
-                    <h4>📊 EQUILÍBRIO DE COMPETÊNCIAS</h4>
+                    <h4>📊 EQUILÍBRIO ATUAL</h4>
                     <div class="chart-container"><canvas id="c-radar"></canvas></div>
                 </div>
                 <div class="card">
-                    <h4>📈 DISTRIBUIÇÃO POR CATEGORIA</h4>
-                    <div class="chart-container"><canvas id="c-pie"></canvas></div>
+                    <h4>📈 LINHA DO TEMPO (EVOLUÇÃO)</h4>
+                    <div class="chart-container"><canvas id="c-history"></canvas></div>
                 </div>
                 <div class="card full">
-                    <h4>📊 COMPARATIVO DE PERFORMANCE (META 100)</h4>
-                    <div class="chart-container" style="height: 160px;"><canvas id="c-comp"></canvas></div>
-                    <textarea id="obs-area" placeholder="Escreva aqui observações estratégicas sobre este gestor..." oninput="salvarObs()"></textarea>
+                    <h4>📊 COMPARATIVO DE PERFORMANCE ENTRE GESTORES</h4>
+                    <div class="chart-container" style="height: 140px;"><canvas id="c-comp"></canvas></div>
+                    <textarea id="obs-area" placeholder="Observações de feedback..." oninput="salvarObs()"></textarea>
                 </div>
             </div>
-            <p style="text-align: center; font-size: 10px; color: #94a3b8; font-weight: bold;">Relatório Executivo SACRES - Gestão de Alta Performance</p>
         </div>
     </main>
 </div>
@@ -133,56 +121,32 @@
 <script>
     const categorias = ['RESULTADOS', 'GESTÃO PESSOAS', 'COMPROMETIMENTO', 'CONTRIBUIÇÃO', 'CULTURA'];
     let atual = 0;
-    let gestores = JSON.parse(localStorage.getItem('sacres_v5_data')) || [
-        { n: 'EXEMPLO DE GESTOR', r: 'GERENTE GERAL', v: [100, 25, 25, 25, 25], s: 5000, obs: "" }
+    let gestores = JSON.parse(localStorage.getItem('sacres_v6_data')) || [
+        { n: 'GESTOR EXEMPLO', r: 'GERENTE', v: [100, 25, 25, 25, 25], s: 5000, obs: "", history: [80, 85, 90, 100] }
     ];
 
-    let radar, pie, compChart;
+    let radar, historyChart, compChart;
 
     function init() {
-        // RADAR CHART COM GRADIENTE
-        const ctxRadar = document.getElementById('c-radar').getContext('2d');
-        const gradRadar = ctxRadar.createLinearGradient(0, 0, 0, 300);
-        gradRadar.addColorStop(0, 'rgba(99, 102, 241, 0.6)');
-        gradRadar.addColorStop(1, 'rgba(168, 85, 247, 0.1)');
-
-        radar = new Chart(ctxRadar, {
+        // RADAR
+        radar = new Chart(document.getElementById('c-radar').getContext('2d'), {
             type: 'radar',
-            data: {
-                labels: categorias.slice(1),
-                datasets: [{
-                    data: [],
-                    backgroundColor: gradRadar,
-                    borderColor: '#6366f1',
-                    borderWidth: 3,
-                    pointBackgroundColor: '#fff',
-                    pointBorderColor: '#6366f1',
-                    pointRadius: 4
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 25, ticks: { display: false }, pointLabels: { font: { weight: 'bold', size: 10 } } } }, plugins: { legend: { display: false } } }
+            data: { labels: categorias.slice(1), datasets: [{ data: [], backgroundColor: 'rgba(99, 102, 241, 0.4)', borderColor: '#6366f1', borderWidth: 2 }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 25, ticks: { display: false } } }, plugins: { legend: { display: false } } }
         });
 
-        // PIE CHART PREMIUM
-        pie = new Chart(document.getElementById('c-pie'), {
-            type: 'doughnut',
-            data: {
-                labels: categorias.slice(1),
-                datasets: [{
-                    data: [],
-                    backgroundColor: ['#6366f1', '#a855f7', '#f43f5e', '#fbbf24'],
-                    borderWidth: 0,
-                    hoverOffset: 15
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, font: { weight: 'bold', size: 10 } } } } }
+        // HISTÓRICO (LINHA DO TEMPO)
+        historyChart = new Chart(document.getElementById('c-history').getContext('2d'), {
+            type: 'line',
+            data: { labels: [], datasets: [{ label: 'Score', data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.1)', fill: true, tension: 0.4, borderWidth: 3 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 100 }, x: { grid: { display: false } } } }
         });
 
-        // BAR CHART COM BORDAS ARREDONDADAS
-        compChart = new Chart(document.getElementById('c-comp'), {
+        // COMPARATIVO BAR
+        compChart = new Chart(document.getElementById('c-comp').getContext('2d'), {
             type: 'bar',
-            data: { labels: [], datasets: [{ data: [], backgroundColor: '#6366f1', borderRadius: 8, barThickness: 20 }] },
-            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { max: 100, grid: { display: false } }, y: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 9 } } } } }
+            data: { labels: [], datasets: [{ data: [], backgroundColor: '#6366f1', borderRadius: 5 }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { max: 100 } } }
         });
 
         renderList(); load(0);
@@ -193,28 +157,18 @@
         const r = document.getElementById('new-role').value.toUpperCase();
         const s = parseFloat(document.getElementById('new-salary').value) || 0;
         if(!n || !r) return alert("Preencha Nome e Cargo!");
-        gestores.push({ n, r, v: [0, 0, 0, 0, 0], s, obs: "" });
+        gestores.push({ n, r, v: [0, 0, 0, 0, 0], s, obs: "", history: [] });
         save(); renderList(); load(gestores.length - 1);
-        document.getElementById('new-name').value = ''; document.getElementById('new-role').value = ''; document.getElementById('new-salary').value = '';
+        document.getElementById('new-name').value=''; document.getElementById('new-role').value='';
     }
 
-    function excluirGestor(index, e) {
-        e.stopPropagation();
-        if(confirm(`Deseja excluir ${gestores[index].n}?`)) {
-            gestores.splice(index, 1);
-            save(); renderList(); 
-            if(gestores.length > 0) load(0);
-        }
-    }
-
-    function renderList() {
-        const list = document.getElementById('list'); list.innerHTML = '';
-        gestores.forEach((g, i) => {
-            list.innerHTML += `<div class="item ${i === atual ? 'active' : ''}" onclick="load(${i})">
-                <b>${g.n}</b>
-                <span style="color:#f43f5e; font-weight:bold; font-size:16px;" onclick="excluirGestor(${i}, event)">✕</span>
-            </div>`;
-        });
+    function salvarNoHistorico() {
+        const score = gestores[atual].v[0];
+        if(!gestores[atual].history) gestores[atual].history = [];
+        gestores[atual].history.push(score);
+        if(gestores[atual].history.length > 10) gestores[atual].history.shift(); // Mantém as últimas 10
+        save(); refresh();
+        alert("Ponto de performance salvo no histórico!");
     }
 
     function load(i) {
@@ -237,21 +191,39 @@
         save(); refresh(); 
     }
 
-    function salvarObs() { gestores[atual].obs = document.getElementById('obs-area').value; save(); }
-    function save() { localStorage.setItem('sacres_v5_data', JSON.stringify(gestores)); }
-
     function refresh() {
         const g = gestores[atual];
         const badge = document.getElementById('badge-total');
-        const color = g.v[0] >= 90 ? "linear-gradient(135deg, #22c55e, #16a34a)" : (g.v[0] >= 75 ? "linear-gradient(135deg, #eab308, #ca8a04)" : "linear-gradient(135deg, #6366f1, #4f46e5)");
-        badge.style.background = color;
         badge.innerText = `TOTAL: ${g.v[0].toFixed(1)}`;
+        badge.style.background = g.v[0] >= 90 ? "var(--success)" : (g.v[0] >= 75 ? "var(--gold)" : "var(--primary)");
         
         radar.data.datasets[0].data = g.v.slice(1); radar.update();
-        pie.data.datasets[0].data = g.v.slice(1); pie.update();
+        
+        historyChart.data.labels = g.history.map((_, idx) => `Av. ${idx + 1}`);
+        historyChart.data.datasets[0].data = g.history; historyChart.update();
+
         compChart.data.labels = gestores.map(x => x.n);
         compChart.data.datasets[0].data = gestores.map(x => x.v[0]);
         compChart.update();
+    }
+
+    function salvarObs() { gestores[atual].obs = document.getElementById('obs-area').value; save(); }
+    function save() { localStorage.setItem('sacres_v6_data', JSON.stringify(gestores)); }
+    function renderList() {
+        const list = document.getElementById('list'); list.innerHTML = '';
+        gestores.forEach((g, i) => {
+            list.innerHTML += `<div class="item ${i === atual ? 'active' : ''}" onclick="load(${i})">
+                <b>${g.n}</b><span onclick="excluirGestor(${i}, event)">✕</span>
+            </div>`;
+        });
+    }
+
+    function excluirGestor(index, e) {
+        e.stopPropagation();
+        if(confirm(`Excluir ${gestores[index].n}?`)) {
+            gestores.splice(index, 1); save(); renderList(); 
+            if(gestores.length > 0) load(0);
+        }
     }
 
     function abrirSalario() {
@@ -259,33 +231,18 @@
         document.querySelector('.overlay').style.display = 'block';
         const list = document.getElementById('salary-list'); list.innerHTML = '';
         gestores.forEach(g => {
-            const bonus = g.s * 0.4;
-            list.innerHTML += `<div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f1f5f9; font-weight:700; font-size:14px;">
-                <span style="color:#0f172a; width:40%">${g.n}</span>
-                <span style="color:#64748b">R$ ${g.s.toLocaleString()}</span>
-                <span style="color:#22c55e">40%: R$ ${bonus.toLocaleString()}</span>
+            list.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee; font-weight:bold; font-size:13px;">
+                <span>${g.n}</span><span>R$ ${g.s.toLocaleString()}</span><span style="color:var(--success)">Bônus: R$ ${(g.s*0.4).toLocaleString()}</span>
             </div>`;
         });
     }
     function fecharSalario() { document.getElementById('salary-modal').style.display='none'; document.querySelector('.overlay').style.display='none'; }
 
-    // PDF REPARADO - PÁGINA ÚNICA TOTAL
     function gerarPDF() {
-        const element = document.getElementById('print-container');
         const actions = document.querySelector('.actions');
-        actions.style.visibility = 'hidden';
-
-        const opt = {
-            margin: 0,
-            filename: `SACRES_REPORT_${gestores[atual].n}.pdf`,
-            image: { type: 'jpeg', quality: 1 },
-            html2canvas: { scale: 2, useCORS: true, width: 1050 },
-            jsPDF: { unit: 'px', format: [1050, 780], orientation: 'landscape' }
-        };
-
-        html2pdf().from(element).set(opt).save().then(() => {
-            actions.style.visibility = 'visible';
-        });
+        actions.style.display = 'none';
+        const opt = { margin: 0, filename: `SACRES_EVOLUTION_${gestores[atual].n}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'px', format: [1050, 800], orientation: 'landscape' } };
+        html2pdf().from(document.getElementById('print-container')).set(opt).save().then(() => { actions.style.display = 'flex'; });
     }
 
     window.onload = init;
