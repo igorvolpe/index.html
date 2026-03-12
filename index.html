@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SACRES - Relatório Unificado</title>
+    <title>SACRES - Gestão Estratégica</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
@@ -15,10 +15,9 @@
         body { background: #f8fafc; height: 100vh; overflow-x: hidden; }
         .wrapper { display: flex; min-height: 100vh; }
 
-        /* SIDEBAR - OCULTA NO PDF */
+        /* SIDEBAR */
         .sidebar { width: 320px; background: var(--bg-sidebar); color: white; padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .list-area { flex-grow: 1; overflow-y: auto; margin: 15px 0; max-height: 300px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        
+        .list-area { flex-grow: 1; overflow-y: auto; margin: 15px 0; max-height: 250px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .item { padding: 10px; background: rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 6px; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: space-between; }
         .item.active { background: var(--primary); font-weight: bold; }
         .btn-del { color: #ff9999; border: none; background: none; cursor: pointer; font-weight: bold; }
@@ -27,27 +26,42 @@
         .add-area input { width: 100%; padding: 6px; margin-bottom: 5px; border-radius: 4px; border: none; font-size: 11px; font-weight: bold; }
         .btn-add { width: 100%; background: var(--success); color: white; border: none; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: 900; font-size: 10px; }
 
-        .editor { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; }
+        .editor { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; margin-bottom: 10px;}
         .row { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; }
         .row label { font-size: 9px; color: #cbd5e1; font-weight: 900; }
-        .row input { width: 60px; text-align: center; border-radius: 6px; border: none; padding: 5px; font-weight: 900; background: #334155; color: white; }
+        .row input { width: 70px; text-align: center; border-radius: 6px; border: none; padding: 5px; font-weight: 900; background: #334155; color: white; }
 
-        /* ÁREA PRINCIPAL */
+        /* MAIN */
         .main { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 20px; min-width: 900px; }
         .header { background: white; padding: 20px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .btn-pdf { background: #be123c; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 900; }
+        .actions { display: flex; gap: 10px; }
+        .btn-pdf { background: #be123c; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 900; }
+        .btn-money { background: #15803d; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 900; }
 
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: white; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; }
-        .card h4 { font-weight: 900; font-size: 11px; color: #64748b; margin-bottom: 10px; }
+        .card { background: white; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; position: relative;}
+        .card h4 { font-weight: 900; font-size: 11px; color: #64748b; margin-bottom: 10px; text-transform: uppercase; }
         .full { grid-column: span 2; }
-        .chart-box { height: 240px; }
+        .chart-box { height: 220px; }
 
-        /* REGRAS ESPECÍFICAS PARA O PDF */
+        #obs-area { width: 100%; height: 60px; border-radius: 8px; border: 1px solid #e2e8f0; padding: 10px; font-size: 12px; font-weight: 600; resize: none; margin-top: 10px; }
+
+        /* SALARIO MODAL */
+        #salary-modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:30px; border-radius:20px; box-shadow:0 0 50px rgba(0,0,0,0.5); z-index:100; width: 500px; }
+        .overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:99; }
+        .salary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 13px; font-weight: bold;}
+
         .no-print { display: none !important; }
     </style>
 </head>
 <body>
+
+<div class="overlay" onclick="fecharSalario()"></div>
+<div id="salary-modal">
+    <h2 style="margin-bottom: 20px; color: var(--bg-sidebar);">💰 Gestão Salarial (Bônus 40%)</h2>
+    <div id="salary-list"></div>
+    <button onclick="fecharSalario()" style="margin-top:20px; width:100%; padding:10px; background:var(--bg-sidebar); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:900;">FECHAR</button>
+</div>
 
 <div class="wrapper">
     <div class="sidebar" id="side-menu">
@@ -56,6 +70,7 @@
         <div class="add-area">
             <input type="text" id="new-name" placeholder="NOME DO FUNCIONÁRIO">
             <input type="text" id="new-role" placeholder="CARGO">
+            <input type="number" id="new-salary" placeholder="SALÁRIO R$">
             <button class="btn-add" onclick="addGestor()">+ ADICIONAR AO SISTEMA</button>
         </div>
 
@@ -70,11 +85,14 @@
     <div class="main" id="report-area">
         <div class="header">
             <div>
-                <h2 id="h-name" style="font-weight: 900; font-size: 22px; color: #1e293b;">Selecionar...</h2>
-                <p id="h-role" style="font-weight: 800; color: var(--primary); text-transform: uppercase;">CARGO</p>
+                <h2 id="h-name" style="font-weight: 900; font-size: 22px; color: #1e293b;">SACRES</h2>
+                <p id="h-role" style="font-weight: 800; color: var(--primary); text-transform: uppercase;">Aguardando Seleção</p>
             </div>
             <div id="badge-total" style="padding: 15px; border-radius: 12px; color: white; font-weight: 900; min-width: 150px; text-align: center;">TOTAL: 0</div>
-            <button class="btn-pdf" id="pdf-button" onclick="gerarPDF()">📄 GERAR PDF PÁGINA ÚNICA</button>
+            <div class="actions">
+                <button class="btn-money" onclick="abrirSalario()">💰 SALÁRIOS</button>
+                <button class="btn-pdf" id="pdf-button" onclick="gerarPDF()">📄 PDF</button>
+            </div>
         </div>
 
         <div class="grid">
@@ -82,23 +100,21 @@
             <div class="card"><h4>📈 DISTRIBUIÇÃO</h4><div class="chart-box"><canvas id="c-pie"></canvas></div></div>
             
             <div class="card full">
-                <h4 style="color: var(--primary); font-weight: 900;">📊 COMPARATIVO DE PERFORMANCE (META 100)</h4>
-                <div class="chart-box" style="height: 280px;"><canvas id="c-comp"></canvas></div>
+                <h4 style="color: var(--primary); font-weight: 900;">📊 COMPARATIVO DE PERFORMANCE</h4>
+                <div class="chart-box" style="height: 200px;"><canvas id="c-comp"></canvas></div>
+                <textarea id="obs-area" placeholder="Escreva observações sobre o gestor aqui..."></textarea>
             </div>
         </div>
-        <p style="text-align: center; font-size: 10px; color: #94a3b8; font-weight: bold;">Relatório gerado pelo Sistema SACRES - Gestão de Performance</p>
     </div>
 </div>
 
 <script>
     const categorias = ['RESULTADOS', 'GESTÃO PESSOAS', 'COMPROMETIMENTO', 'CONTRIBUIÇÃO', 'CULTURA'];
-    const pesosMax = [100, 25, 25, 25, 25]; 
-    
     let atual = 0;
-    let gestores = [
-        { n: 'Fabio Henrique Bethiol', r: 'GERENTE FINANCEIRO', v: [100, 25, 25, 25, 25] },
-        { n: 'Iolanda Rocha Volpe', r: 'COORD DP & RH', v: [80, 20, 20, 20, 20] },
-        { n: 'Ricardo Cecconi Jr', r: 'GERENTE GERAL', v: [100, 25, 25, 25, 25] }
+    
+    // CARREGAR DADOS OU INICIAR PADRÃO
+    let gestores = JSON.parse(localStorage.getItem('sacres_data')) || [
+        { n: 'FABIO HENRIQUE', r: 'GERENTE', v: [100, 25, 25, 25, 25], s: 5000, obs: "" }
     ];
 
     let radar, pie, compChart;
@@ -106,25 +122,26 @@
     function init() {
         const opt = { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } } };
         radar = new Chart(document.getElementById('c-radar'), { type: 'radar', data: { labels: categorias.slice(1), datasets: [{ data: [], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', borderWidth: 3 }] }, options: { ...opt, scales: { r: { min: 0, max: 25, pointLabels: { font: { weight: 'bold' } } } } } });
-        pie = new Chart(document.getElementById('c-pie'), { type: 'doughnut', data: { labels: categorias.slice(1), datasets: [{ data: [], backgroundColor: ['#10b981', '#f59e0b', '#8b5cf6', '#ec4899'] }] }, options: { ...opt, plugins: { legend: { display: true, position: 'bottom', labels: { font: { weight: 'bold' } } } } } });
-        compChart = new Chart(document.getElementById('c-comp'), { type: 'bar', data: { labels: [], datasets: [{ data: [], backgroundColor: '#3b82f6', borderRadius: 8 }] }, options: { ...opt, indexAxis: 'y', scales: { x: { min: 0, max: 100 } } } });
+        pie = new Chart(document.getElementById('c-pie'), { type: 'doughnut', data: { labels: categorias.slice(1), datasets: [{ data: [], backgroundColor: ['#10b981', '#f59e0b', '#8b5cf6', '#ec4899'] }] }, options: { ...opt, plugins: { legend: { display: true, position: 'bottom' } } } });
+        compChart = new Chart(document.getElementById('c-comp'), { type: 'bar', data: { labels: [], datasets: [{ data: [], backgroundColor: '#3b82f6', borderRadius: 5 }] }, options: { ...opt, indexAxis: 'y', scales: { x: { min: 0, max: 100 } } } });
 
         renderList(); load(0);
     }
 
     function addGestor() {
-        const nome = document.getElementById('new-name').value.toUpperCase();
-        const cargo = document.getElementById('new-role').value.toUpperCase();
-        if(!nome || !cargo) return alert("Preencha os dados!");
-        gestores.push({ n: nome, r: cargo, v: [0, 0, 0, 0, 0] });
-        renderList(); load(gestores.length - 1);
+        const n = document.getElementById('new-name').value.toUpperCase();
+        const r = document.getElementById('new-role').value.toUpperCase();
+        const s = parseFloat(document.getElementById('new-salary').value) || 0;
+        if(!n || !r) return alert("Preencha Nome e Cargo!");
+        gestores.push({ n, r, v: [0, 0, 0, 0, 0], s: s, obs: "" });
+        save(); renderList(); load(gestores.length - 1);
     }
 
     function excluirGestor(index, e) {
         e.stopPropagation();
         if(confirm(`Excluir ${gestores[index].n}?`)) {
             gestores.splice(index, 1);
-            atual = 0; renderList(); load(0);
+            save(); renderList(); load(0);
         }
     }
 
@@ -144,27 +161,28 @@
         atual = i; const g = gestores[i];
         document.getElementById('h-name').innerText = g.n;
         document.getElementById('h-role').innerText = g.r;
+        document.getElementById('obs-area').value = g.obs || "";
         const ins = document.getElementById('inputs'); ins.innerHTML = '';
         categorias.forEach((c, j) => {
-            ins.innerHTML += `<div class="row"><label>${c}</label><input type="number" id="inp-${j}" value="${g.v[j]}" ${j==0?'readonly':''} oninput="upd(${j}, this.value)"></div>`;
+            ins.innerHTML += `<div class="row"><label>${c}</label><input type="number" value="${g.v[j]}" ${j==0?'readonly':''} oninput="upd(${j}, this.value)"></div>`;
         });
-        refresh(); renderList();
+        refresh();
     }
 
     function upd(j, v) { 
         let val = Math.min(parseFloat(v) || 0, 25);
         gestores[atual].v[j] = val; 
         gestores[atual].v[0] = gestores[atual].v.slice(1).reduce((a, b) => a + b, 0);
-        document.getElementById('inp-0').value = gestores[atual].v[0].toFixed(1);
-        refresh(); 
+        gestores[atual].obs = document.getElementById('obs-area').value;
+        save(); refresh(); load(atual);
     }
+
+    function save() { localStorage.setItem('sacres_data', JSON.stringify(gestores)); }
 
     function refresh() {
         const g = gestores[atual];
-        const badge = document.getElementById('badge-total');
-        badge.style.backgroundColor = g.v[0] >= 100 ? "var(--success)" : (g.v[0] >= 80 ? "var(--gold)" : "var(--primary)");
-        badge.innerText = `TOTAL: ${g.v[0].toFixed(1)} / 100`;
-
+        document.getElementById('badge-total').style.backgroundColor = g.v[0] >= 100 ? "var(--success)" : (g.v[0] >= 80 ? "var(--gold)" : "var(--primary)");
+        document.getElementById('badge-total').innerText = `TOTAL: ${g.v[0].toFixed(1)}`;
         radar.data.datasets[0].data = g.v.slice(1); radar.update();
         pie.data.datasets[0].data = g.v.slice(1); pie.update();
         compChart.data.labels = gestores.map(x => x.n);
@@ -172,30 +190,31 @@
         compChart.update();
     }
 
-    // FUNÇÃO PDF REVISADA - PÁGINA ÚNICA TOTAL
+    // SALARIO LOGICA
+    function abrirSalario() {
+        document.getElementById('salary-modal').style.display = 'block';
+        document.querySelector('.overlay').style.display = 'block';
+        const list = document.getElementById('salary-list');
+        list.innerHTML = '';
+        gestores.forEach(g => {
+            const bonus = g.s * 0.4;
+            list.innerHTML += `<div class="salary-row">
+                <span>${g.n}</span>
+                <span>Salário: R$ ${g.s.toLocaleString()}</span>
+                <span style="color:var(--success)">40%: R$ ${bonus.toLocaleString()}</span>
+            </div>`;
+        });
+    }
+    function fecharSalario() { 
+        document.getElementById('salary-modal').style.display = 'none';
+        document.querySelector('.overlay').style.display = 'none';
+    }
+
     function gerarPDF() {
         const element = document.getElementById('report-area');
-        const btn = document.getElementById('pdf-button');
-        
-        // Ocultar botão no PDF
-        btn.classList.add('no-print');
-
-        const opt = {
-            margin: [5, 5, 5, 5],
-            filename: `SACRES_${gestores[atual].n}.pdf`,
-            image: { type: 'jpeg', quality: 1 },
-            html2canvas: { 
-                scale: 2, 
-                logging: false, 
-                useCORS: true,
-                width: element.offsetWidth // Força a captura da largura real do elemento
-            },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-        };
-
-        html2pdf().set(opt).from(element).save().then(() => {
-            btn.classList.remove('no-print');
-        });
+        document.getElementById('pdf-button').classList.add('no-print');
+        const opt = { margin: 5, filename: `SACRES_${gestores[atual].n}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
+        html2pdf().set(opt).from(element).save().then(() => document.getElementById('pdf-button').classList.remove('no-print'));
     }
 
     window.onload = init;
